@@ -1,8 +1,4 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
-
-# Getting Started
-
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+This is a new **React Native 0.81.4** boilerplate [react-native](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli). This project is setup with Tailwind CSS, React Reanimate, and environment variable use friendly.
 
 ## Step 1: Start Metro
 
@@ -62,7 +58,11 @@ If everything is set up correctly, you should see your new app running in the An
 
 This is one way to run your app — you can also build it directly from Android Studio or Xcode.
 
-## Step 3: Modify your app
+## Step 3: Setup environment variables
+
+Create a **.env** file to your root of the project and add it to **.gitignore** file.
+
+## Step 4: Modify your app
 
 Now that you have successfully run the app, let's make changes!
 
