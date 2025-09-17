@@ -41,6 +41,10 @@ node_modules/
 npm-debug.log
 yarn-error.log
 
+# App Config
+#
+app-config/
+
 # Environment
 #
 .env
