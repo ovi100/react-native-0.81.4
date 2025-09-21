@@ -1,5 +1,5 @@
 import LottieView from 'lottie-react-native';
-import animationData from '../../assets/lottie/no-access.json';
+import animationData from '../../../assets/lottie/no-access.json';
 
 const NoAccess = ({ styles }) => {
   return (

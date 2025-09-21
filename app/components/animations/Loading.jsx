@@ -1,5 +1,5 @@
 import LottieView from 'lottie-react-native';
-import animationData from '../../assets/lottie/loading.json';
+import animationData from '../../../assets/lottie/loading.json';
 
 const Loading = ({ styles }) => {
   return (

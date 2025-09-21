@@ -1,5 +1,5 @@
 import LottieView from 'lottie-react-native';
-import animationData from '../../assets/lottie/hour-glass.json';
+import animationData from '../../../assets/lottie/hour-glass.json';
 
 const HourGlass = ({ styles }) => {
   return (

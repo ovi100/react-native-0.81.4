@@ -7,7 +7,7 @@ import Ready from './Ready';
 import Scan from './Scan';
 import Search from './Search';
 import ServerError from './ServerError';
-
+import TextAnimation from './TextAnimation';
 export {
   EmptyBox,
   HourGlass,
@@ -18,4 +18,5 @@ export {
   Scan,
   Search,
   ServerError,
+  TextAnimation
 };

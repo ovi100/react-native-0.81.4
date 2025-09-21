@@ -1,5 +1,5 @@
 import LottieView from 'lottie-react-native';
-import animationData from '../../assets/lottie/wifi.json';
+import animationData from '../../../assets/lottie/wifi.json';
 
 const NoInternet = ({ styles }) => {
   return (

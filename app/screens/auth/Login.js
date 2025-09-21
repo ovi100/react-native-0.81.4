@@ -1,18 +1,41 @@
+import { useEffect } from 'react';
 import { View, Text, TouchableOpacity, Platform, Image, KeyboardAvoidingView } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { LogIn, LockKeyhole, UserRound } from 'lucide-react-native';
-import { validateUserId, width } from '../../../utils';
+import { toast, validateUserId, width } from '../../../utils';
 import { Button, Input } from '../../components/ui'
 import { LogoImage } from '../../../assets/images';
+import { useAppContext } from '../../../hooks';
+import { getStorage } from '../../../utils/storage';
 
 
 const Login = ({ navigation }) => {
-  const {
-    control,
-    handleSubmit,
-    // setValue,
-    formState: { errors },
-  } = useForm();
+  const { control, handleSubmit, setValue, formState: { errors } } = useForm();
+  const { authInfo } = useAppContext();
+  const { isLoading, login } = authInfo;
+
+  // checking saved credentials
+  useEffect(() => {
+    const loadCredentials = async () => {
+      try {
+        const isSaved = await getStorage('savePassword');
+        const loginData = await getStorage('loginInfo');
+        if (isSaved && loginData && loginData.userId) {
+          setValue('userId', loginData.userId);
+          setValue('password', loginData.password);
+        }
+      } catch ({ message }) {
+        toast(message);
+      }
+    };
+    loadCredentials();
+  }, [setValue]);
+
+  const onSubmit = async data => {
+    const { userId, password } = data;
+    await login(userId, password);
+  };
+
   return (
     <KeyboardAvoidingView
       className="bg-white flex-1 justify-center py-2.5"
@@ -28,14 +51,14 @@ const Login = ({ navigation }) => {
               name="userId"
               control={control}
               rules={{
-                required: 'User ID is required',
+                required: 'Phone number is required',
                 validate: value =>
-                  validateUserId(value.trim()) || 'Invalid user ID',
+                  validateUserId(value.trim()) || 'Invalid phone number',
               }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input
                   icon={<UserRound size={24} color="#64748b" />}
-                  placeholder="Enter user id"
+                  placeholder="Enter phone number"
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
@@ -83,15 +106,19 @@ const Login = ({ navigation }) => {
           <View className="buttons">
             <Button
               text={
-
-                'Login'
+                isLoading
+                  ? 'Logging into app'
+                  : 'Login'
               }
               size={width > 460 ? 'large' : 'medium'}
               variant="brand"
               brandColor="#C03221"
-              // loading={isLoadingAppInfo || isDownLoading || isLoading}
-              icon={<LogIn size={20} color="#fff" />}
-              onPress={handleSubmit(null)}
+              loading={isLoading}
+              icon={isLoading ? null : (
+                <LogIn size={20} color="#fff" />
+              )
+              }
+              onPress={handleSubmit(onSubmit)}
             />
             <View className="mt-5">
               <TouchableOpacity onPress={() => navigation.push('Register')}>

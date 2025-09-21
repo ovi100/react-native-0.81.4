@@ -1,17 +1,28 @@
 import { View, Text } from 'react-native';
-import { APP_STAGE } from '../../../app-config';
-import { dependencies } from '../../../package.json';
+import { Button } from '../../components/ui';
+import { useAppContext } from '../../../hooks';
 
-const Home = () => {
+const Home = ({ navigation }) => {
+  const { authInfo } = useAppContext();
+  const { user, logout } = authInfo;
   return (
     <View className="flex-1 items-center justify-center bg-white">
-      <Text className="text-2xl font-bold text-blue-500 text-center">
-        Welcome to React Native {'\n' + dependencies['react-native']}
+      <Text className="w-full text-2xl font-bold text-blue-500 text-center capitalize">
+        Welcome, {user.name}
       </Text>
       <Text className="text-lg text-black text-center my-2">
-        Tailwind CSS is ready for the project
+        Active Site : {user.active_site}
       </Text>
-      <Text className="text-base font-semibold text-gray-600">App Stage: {APP_STAGE}</Text>
+      <View className="flex-row items-center gap-x-2 mt-5">
+        <Button text='Logout Now' size='small' variant='danger' edge='capsule' onPress={logout} />
+        <Button
+          text='Change Site'
+          size='small'
+          variant='danger'
+          edge='capsule'
+          onPress={() => navigation.navigate('ChooseSite', { screen: 'Home', user })}
+        />
+      </View>
     </View>
   );
 };

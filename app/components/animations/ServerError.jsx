@@ -1,5 +1,5 @@
 import LottieView from 'lottie-react-native';
-import animationData from '../../assets/lottie/server.json';
+import animationData from '../../../assets/lottie/server.json';
 
 const ServerError = ({ styles }) => {
   return (

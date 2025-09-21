@@ -1,5 +1,5 @@
 import LottieView from 'lottie-react-native';
-import animationData from '../../assets/lottie/scan.json';
+import animationData from '../../../assets/lottie/scan.json';
 
 const Scan = ({ styles }) => {
   return (
