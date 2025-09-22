@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Splash from '../screens/common/Splash';
@@ -7,6 +7,8 @@ import AuthNavigator from './AuthNavigator';
 import AppNavigator from './app-navigator';
 import { requestPermissions } from '../../utils';
 import { useAppContext } from '../../hooks';
+import { BackHandler } from 'react-native';
+import { Dialog } from '../components/ui';
 
 
 const RootNavigator = () => {
@@ -15,9 +17,24 @@ const RootNavigator = () => {
   const { isLoading, user } = authInfo;
   const { theme } = deviceInfo;
   const currentTheme = theme === 'dark' ? DarkTheme : DefaultTheme
+  const [dialogVisible, setDialogVisible] = useState(false);
 
   useEffect(() => {
     requestPermissions();
+  }, []);
+
+  useEffect(() => {
+    const backAction = () => {
+      setDialogVisible(true);
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction,
+    );
+
+    return () => backHandler.remove();
   }, []);
 
 
@@ -50,6 +67,15 @@ const RootNavigator = () => {
           />
         )}
       </Stack.Navigator>
+      <Dialog
+        isOpen={dialogVisible}
+        modalHeader="Exit operations app"
+        modalSubHeader="Press 'Cancel' to continue or 'Exit' to close the app."
+        onClose={() => setDialogVisible(false)}
+        onSubmit={() => BackHandler.exitApp()}
+        leftButtonText="cancel"
+        rightButtonText="exit"
+      />
     </NavigationContainer>
   );
 };

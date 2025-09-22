@@ -4,7 +4,8 @@ import ChooseSite from '../../screens/choose-site/ChooseSite';
 import ProfileNavigator from './ProfileNavigator';
 import { useAppContext } from '../../../hooks';
 import { Button } from '../../components/ui';
-import { CircleUserRound } from 'lucide-react-native';
+import { Image } from 'react-native';
+import { ProfileMenuImage } from '../../../assets/images';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -27,7 +28,7 @@ const AppNavigator = () => {
     return (
       <Button
         type='icon'
-        icon={<CircleUserRound size={24} />}
+        icon={<Image source={ProfileMenuImage} className="w-7 h-7" />}
         onPress={() => navigation.navigate('ProfileRoot')}
       />
     );

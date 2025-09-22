@@ -1,5 +1,4 @@
 import { View, Text } from 'react-native';
-import { Button } from '../../components/ui';
 import { useAppContext } from '../../../hooks';
 
 const Home = ({ navigation }) => {
@@ -13,15 +12,6 @@ const Home = ({ navigation }) => {
       <Text className="text-lg text-black text-center my-2">
         Active Site : {user.active_site}
       </Text>
-      <View className="mt-5">
-        <Button
-          text='Profile screen'
-          size='small'
-          variant='brand'
-          edge='capsule'
-          onPress={() => navigation.navigate('ProfileRoot')}
-        />
-      </View>
     </View>
   );
 };

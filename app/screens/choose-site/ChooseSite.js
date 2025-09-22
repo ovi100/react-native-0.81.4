@@ -5,6 +5,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'reac
 import { AvatarImage, SitesImage } from '../../../assets/images';
 import { Button } from '../../components/ui';
 import { width } from '../../../utils';
+import { Frown, LogOutIcon } from 'lucide-react-native';
 
 const ChooseSite = ({ navigation, route }) => {
   const { authInfo } = useAppContext();
@@ -17,9 +18,10 @@ const ChooseSite = ({ navigation, route }) => {
 
   useLayoutEffect(() => {
     let screenOptions = screenOptions = {
-      headerTitle: !route?.params?.user?.active_site ? 'Choose Site' : 'Change Site',
-      headerBackVisible: route?.params?.screen !== 'root',
-      headerTitleAlign: 'center',
+      headerTitle: hasActiveSite ? 'Change Site' : 'Choose Site',
+      headerBackVisible: mode !== 'select',
+      headerShadowVisible: false,
+      headerTitleAlign: mode !== 'select' ? 'center' : 'left',
       headerTitleStyle: {
         fontSize: width >= 360 ? 18 : 14,
       },
@@ -34,7 +36,7 @@ const ChooseSite = ({ navigation, route }) => {
     };
 
     navigation.setOptions(screenOptions);
-  }, [navigation, route.params]);
+  }, [hasActiveSite, mode, navigation]);
 
   useEffect(() => {
     if (!user) return;
@@ -68,6 +70,8 @@ const ChooseSite = ({ navigation, route }) => {
     );
   }
 
+  // console.log(user);
+
   const renderItem = ({ item }) => (
     <TouchableOpacity
       className="site-box w-1/4 mt-4"
@@ -84,6 +88,8 @@ const ChooseSite = ({ navigation, route }) => {
       </View>
     </TouchableOpacity>
   );
+
+  const listStyle = { paddingVertical: 10 };
 
   return (
     <View className="flex-1 bg-white px-3">
@@ -110,7 +116,28 @@ const ChooseSite = ({ navigation, route }) => {
               </Text>
             </View>
             <View className="mt-5">
-              <Button text='Logout' variant='danger' onPress={logout} />
+              <Button
+                text='Logout'
+                size='small'
+                variant='danger'
+                icon={<LogOutIcon size={20} color="#fff" />}
+                onPress={logout}
+              />
+            </View>
+          </View>
+        )}
+        {user?.sites.length > 0 && sites?.length === 0 && (
+          <View className="h-full items-center justify-center px-3">
+            <View className="mt-3">
+              <Text className="text-center">
+                <Frown size={60} color="#ccc" />
+              </Text>
+              <Text className="text-center text-gray-400 text-lg font-semibold mt-2">
+                search for "{search}" not match any site!
+              </Text>
+              <Text className="text-center text-gray-400 text-lg font-semibold mt-2">
+                please search something else.
+              </Text>
             </View>
           </View>
         )}
@@ -125,7 +152,7 @@ const ChooseSite = ({ navigation, route }) => {
             key={`flatList-${4}`}
             // onEndReached={handleEndReached}
             // ListFooterComponent={sites.length > 24 ? renderFooter : null}
-            ListFooterComponentStyle={{ paddingVertical: 10 }}
+            ListFooterComponentStyle={listStyle}
           />
         )}
       </View>
