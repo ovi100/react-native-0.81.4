@@ -1,9 +1,9 @@
 import { API_URL, APP_STAGE } from '../app-config';
 import { useEffect, useState } from 'react';
 import { version } from '../package.json';
-import { Message, toast } from '../utils';
 // import useActivity from './useActivity';
 import { getStorage, multiRemove, setStorage } from '../utils/storage';
+import { toast } from '../utils';
 
 const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);

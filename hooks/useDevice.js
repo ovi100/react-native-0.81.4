@@ -1,11 +1,13 @@
-import {Dimensions, Platform, useColorScheme} from 'react-native';
+import { useState } from 'react';
+import { Dimensions, Platform, useColorScheme } from 'react-native';
 
 const useDevice = () => {
-  const theme = useColorScheme();
-  const {width, height} = Dimensions.get('window');
+  const [theme, setTheme] = useState(useColorScheme());
+  const { width, height } = Dimensions.get('window');
 
   const deviceInfo = {
     theme,
+    setTheme,
     width,
     height,
     os: Platform.OS,

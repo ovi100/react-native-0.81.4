@@ -57,6 +57,7 @@ const Login = ({ navigation }) => {
               }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input
+                  size="large"
                   icon={<UserRound size={24} color="#64748b" />}
                   placeholder="Enter phone number"
                   onBlur={onBlur}
@@ -81,6 +82,7 @@ const Login = ({ navigation }) => {
               }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input
+                  size="large"
                   icon={<LockKeyhole size={24} color="#64748b" />}
                   placeholder="Password"
                   isPassword

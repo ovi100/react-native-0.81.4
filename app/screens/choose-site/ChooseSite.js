@@ -1,7 +1,7 @@
 import { View, Text, Image, TouchableOpacity, FlatList } from 'react-native';
 import { useAppContext } from '../../../hooks';
 import { setStorage } from '../../../utils/storage';
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { AvatarImage, SitesImage } from '../../../assets/images';
 import { Button } from '../../components/ui';
 import { width } from '../../../utils';
@@ -9,9 +9,11 @@ import { width } from '../../../utils';
 const ChooseSite = ({ navigation, route }) => {
   const { authInfo } = useAppContext();
   const { setUser, logout } = authInfo;
-  let sites = route?.params?.user?.sites;
   const [search, setSearch] = useState('');
-  console.log(route);
+  const user = route?.params?.user || null;
+  const mode = route?.params?.mode || 'select';
+  let sites = useMemo(() => (user?.sites ?? []), [user]);
+  const hasActiveSite = Boolean(user && user.active_site);
 
   useLayoutEffect(() => {
     let screenOptions = screenOptions = {
@@ -34,30 +36,31 @@ const ChooseSite = ({ navigation, route }) => {
     navigation.setOptions(screenOptions);
   }, [navigation, route.params]);
 
-  if (route?.params?.user?.active_site) {
-    navigation.navigate('App');
-  }
-
   useEffect(() => {
+    if (!user) return;
     const hasOneSite = sites?.length === 1;
     if (hasOneSite) {
-      updateUser(sites[0])
+      handleSelect(sites[0])
     }
-  }, [sites, updateUser]);
+  }, [handleSelect, sites, user]);
 
-  const updateUser = useCallback(async item => {
-    let newUser = {
-      ...route?.params?.user,
-      active_site: item.code,
-    };
-    setUser(newUser);
-    await setStorage('user', newUser);
-    if (route?.params?.screen === 'root') {
-      navigation.navigate('App');
+  const handleSelect = useCallback(async site => {
+    if (!user) return;
+
+    const updated = { ...user, active_site: site.code };
+    setUser(updated);
+    await setStorage('user', updated);
+
+    if (mode === 'switch') {
+      navigation.goBack();
     } else {
-      navigation.navigate(route?.params?.screen);
+      navigation.replace('Dashboard');
     }
-  }, [navigation, route?.params, setUser]);
+  }, [mode, navigation, setUser, user]);
+
+  if (hasActiveSite && mode === 'select') {
+    navigation.navigate('Dashboard');
+  }
 
   if (search !== '') {
     sites = sites.filter(item =>
@@ -68,7 +71,7 @@ const ChooseSite = ({ navigation, route }) => {
   const renderItem = ({ item }) => (
     <TouchableOpacity
       className="site-box w-1/4 mt-4"
-      onPress={() => updateUser(item)}
+      onPress={() => handleSelect(item)}
       key={item.code}>
       <View className="flex-col items-center">
         <View className="icon">
@@ -85,7 +88,7 @@ const ChooseSite = ({ navigation, route }) => {
   return (
     <View className="flex-1 bg-white px-3">
       <View className="flex-1">
-        {route?.params?.user?.sites.length === 0 && (
+        {user?.sites.length === 0 && (
           <View className="h-full items-center justify-center px-3">
             <View className="photo">
               <Image
@@ -95,12 +98,12 @@ const ChooseSite = ({ navigation, route }) => {
             </View>
             <View className="mt-3">
               <Text className="text-blue-600 text-lg xs:text-2xl font-semibold capitalize">
-                hello, {route?.params?.user?.name}
+                hello, {user?.name}
               </Text>
             </View>
             <View className="w-4/5 mt-3">
               <Text className="text-center text-gray-400 text-base xs:text-lg font-semibold mb-2">
-                User Id: {user.staffId ? user.staffId : user.email}
+                User Id: {user?.staffId ? user.staffId : user?.email}
               </Text>
               <Text className="text-center text-gray-400 text-base xs:text-lg">
                 You don't have any active site. Please contact with admin

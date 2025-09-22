@@ -125,11 +125,9 @@ const Input = forwardRef(
       const base = [
         sizeIconClass,
         'items-center justify-center px-2',
-        // Only show box/border for outline (underline looks odd with boxed icon)
         isUnderline ? '' : `border ${borderClass}`,
         edgeClass,
       ];
-      // Remove the touching border to avoid a thick double line.
       if (!isUnderline) {
         if (iconPosition === 'left') base.push('border-r-0 rounded-tr-none rounded-br-none -mr-2');
         if (iconPosition === 'right') base.push('border-l-0 rounded-tl-none rounded-bl-none -ml-2');
