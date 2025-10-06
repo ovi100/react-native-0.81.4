@@ -11,6 +11,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@hot-updater/react-native": "^0.20.11",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/netinfo": "^11.4.1",
     "@react-navigation/elements": "^2.6.4",
@@ -37,6 +38,8 @@
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.3",
     "@babel/runtime": "^7.25.0",
+    "@hot-updater/bare": "^0.20.11",
+    "@hot-updater/supabase": "^0.20.11",
     "@react-native-community/cli": "20.0.0",
     "@react-native-community/cli-platform-android": "20.0.0",
     "@react-native-community/cli-platform-ios": "20.0.0",
@@ -48,7 +51,9 @@
     "@types/node": "^24.5.1",
     "@types/react": "^19.1.0",
     "@types/react-test-renderer": "^19.1.0",
+    "dotenv": "^17.2.3",
     "eslint": "^8.19.0",
+    "hot-updater": "^0.20.11",
     "jest": "^29.6.3",
     "react-test-renderer": "19.1.0",
     "typescript": "^5.8.3"

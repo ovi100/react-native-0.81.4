@@ -5,5 +5,6 @@ module.exports = {
   ],
   plugins: [
     'react-native-worklets/plugin',
+    'hot-updater/babel-plugin'
   ],
 };

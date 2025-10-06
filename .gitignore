@@ -77,3 +77,7 @@ app-config/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+# hot-updater
+.env.hotupdater
+# hot-updater
+.hot-updater/output
