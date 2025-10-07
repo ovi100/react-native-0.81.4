@@ -9,6 +9,9 @@ const Home = ({ navigation }) => {
       <Text className="w-full text-2xl font-bold text-blue-500 text-center capitalize">
         Welcome, {user.name}, HotUpdater is here!
       </Text>
+      <Text className="w-full text-lg font-bold text-black text-center mt-2">
+        HotUpdater is here!
+      </Text>
       <Text className="text-lg text-black text-center my-2">
         Active Site : {user.active_site}
       </Text>
