@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { useAppContext } from '../../../../hooks';
-import { Button } from '../../../components/ui';
+import { Button } from '../../../../components';
 
 const Profile = ({ navigation }) => {
   const { authInfo } = useAppContext();

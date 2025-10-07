@@ -1,5 +1,5 @@
 import LottieView from 'lottie-react-native';
-import animationData from '../../../assets/lottie/search.json';
+import animationData from '../../assets/lottie/search.json';
 
 const Search = ({ styles }) => {
   return (

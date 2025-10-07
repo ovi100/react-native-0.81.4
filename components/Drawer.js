@@ -6,7 +6,7 @@ import Animated, {
   withTiming,
   runOnJS,
 } from 'react-native-reanimated';
-import { elevations } from '../../../utils/common';
+import { elevations } from '../utils/common';
 
 const {width, height} = Dimensions.get('window');
 

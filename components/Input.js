@@ -88,7 +88,7 @@ const Input = forwardRef(
         case 'small':
           return 'absolute top-3 right-3';
         case 'large':
-          return 'absolute top-[14px] right-3';
+          return 'absolute top-5 right-3';
         default:
           return 'absolute top-4 right-3';
       }
@@ -158,7 +158,7 @@ const Input = forwardRef(
           <TouchableOpacity
             className={floatIconClass}
             onPress={toggleSecure}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            // hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <IconWrapper size={20} color={isDarkMode ? '#aaa' : '#000'} />
           </TouchableOpacity>

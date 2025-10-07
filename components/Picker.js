@@ -10,8 +10,8 @@ import {
   Platform,
   Pressable,
 } from 'react-native';
-import { height } from '../../../utils';
-import { edges } from '../../../utils/common';
+import { height } from '../utils';
+import { edges } from '../utils/common';
 
 /**
  * A customizable picker component with support for size, variant, icons, loading, and disabled states.
@@ -94,6 +94,14 @@ const Picker = ({
     };
   };
 
+  const inputStyles = () => {
+    if (filteredData.length === 0) {
+      return { borderBottomWidth: 1, borderBottomColor: '#eaeaea' };
+    } else {
+      return { borderBottomWidth: 0 }
+    }
+  };
+
   return (
     <>
       <Wrapper
@@ -124,7 +132,7 @@ const Picker = ({
               <>
                 {enableSearch && (
                   <TextInput
-                    style={[styles.searchInput, filteredData.length === 0 ? { borderBottomWidth: 1, borderBottomColor: '#eaeaea' } : { borderBottomWidth: 0 }]}
+                    style={[styles.searchInput, inputStyles()]}
                     placeholder="search an option....."
                     placeholderTextColor="#ccc"
                     selectionColor="#000"

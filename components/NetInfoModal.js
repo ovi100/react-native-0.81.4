@@ -1,8 +1,9 @@
-import {Text, View} from 'react-native';
-import Modal from './ui/Modal';
-import NoInternet from './animations/NoInternet';
+import { Text, View } from 'react-native';
+import Modal from './Modal';
+import { NoInternet } from './animations';
 
-const NetInfoModal = ({netInfo}) => {
+
+const NetInfoModal = ({ netInfo }) => {
   return (
     <Modal
       isOpen={!netInfo.isConnected || !netInfo.isInternetReachable}

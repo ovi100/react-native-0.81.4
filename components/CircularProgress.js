@@ -47,7 +47,7 @@ const CircularProgress = ({
       duration,
       easing: Easing.out(Easing.ease),
     });
-  }, [progress]);
+  }, [duration, progress, progressValue]);
 
   const animatedCircleProps = useAnimatedProps(() => {
     const strokeDashoffset = interpolate(

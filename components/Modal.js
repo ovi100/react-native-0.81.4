@@ -30,11 +30,11 @@ const Modal = ({
     };
   };
 
-  const getDynamicHeaderText = () => {
-    return {
-      marginLeft: showCloseButton ? 20 : 0,
-    };
-  };
+  // const getDynamicHeaderText = () => {
+  //   return {
+  //     marginLeft: showCloseButton ? 20 : 0,
+  //   };
+  // };
 
   const getContentStyles = () => {
     return {

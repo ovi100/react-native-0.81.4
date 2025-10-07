@@ -3,9 +3,9 @@ import Home from '../../screens/dashboard/Home';
 import ChooseSite from '../../screens/choose-site/ChooseSite';
 import ProfileNavigator from './ProfileNavigator';
 import { useAppContext } from '../../../hooks';
-import { Button } from '../../components/ui';
 import { Image } from 'react-native';
 import { ProfileMenuImage } from '../../../assets/images';
+import { Button } from '../../../components';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {

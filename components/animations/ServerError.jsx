@@ -1,7 +1,7 @@
 import LottieView from 'lottie-react-native';
-import animationData from '../../../assets/lottie/hour-glass.json';
+import animationData from '../../assets/lottie/server.json';
 
-const HourGlass = ({ styles }) => {
+const ServerError = ({ styles }) => {
   return (
     <LottieView
       source={animationData}
@@ -12,4 +12,4 @@ const HourGlass = ({ styles }) => {
   );
 };
 
-export default HourGlass;
+export default ServerError;

@@ -1,12 +1,17 @@
 {
   "extends": "@react-native/typescript-config",
   "include": [
+    "**/*.js",
+    "**/*.jsx",
     "**/*.ts",
     "**/*.tsx",
-    "nativewind-env.d.ts"
-, "app/navigation/RootNavigator.js", "app/screens/auth/Login.js", "app-config/index.js", "app/App.js", "app/screens/dashboard/Home.js", "app/screens/auth/Register.js"  ],
-  "exclude": [
-    "**/node_modules",
-    "**/Pods"
-  ]
+    "nativewind-env.d.ts",
+    "app/navigation/RootNavigator.js",
+    "app/screens/auth/Login.js",
+    "app-config/index.js",
+    "app/App.js",
+    "app/screens/dashboard/Home.js",
+    "app/screens/auth/Register.js"
+  ],
+  "exclude": ["**/node_modules", "**/Pods"]
 }

@@ -41,9 +41,10 @@ node_modules/
 npm-debug.log
 yarn-error.log
 
-# App Config
+# Others folder
 #
 app-config/
+dist/
 
 # fastlane
 #

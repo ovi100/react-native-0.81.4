@@ -1,7 +1,7 @@
 import LottieView from 'lottie-react-native';
-import animationData from '../../../assets/lottie/wifi.json';
+import animationData from '../../assets/lottie/ready.json';
 
-const NoInternet = ({ styles }) => {
+const Ready = ({ styles }) => {
   return (
     <LottieView
       source={animationData}
@@ -12,4 +12,4 @@ const NoInternet = ({ styles }) => {
   );
 };
 
-export default NoInternet;
+export default Ready;

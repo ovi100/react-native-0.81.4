@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {edges, sizes, variants} from '../../../utils/common';
+import { edges, sizes, variants } from '../utils/common';
 
 /**
  * A customizable button component with support for size, variant, icons, loading, and disabled states.

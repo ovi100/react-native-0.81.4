@@ -3,9 +3,9 @@ import { useAppContext } from '../../../hooks';
 import { setStorage } from '../../../utils/storage';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { AvatarImage, SitesImage } from '../../../assets/images';
-import { Button } from '../../components/ui';
 import { width } from '../../../utils';
 import { Frown, LogOutIcon } from 'lucide-react-native';
+import { Button } from '../../../components';
 
 const ChooseSite = ({ navigation, route }) => {
   const { authInfo } = useAppContext();
@@ -16,27 +16,35 @@ const ChooseSite = ({ navigation, route }) => {
   let sites = useMemo(() => (user?.sites ?? []), [user]);
   const hasActiveSite = Boolean(user && user.active_site);
 
+
   useLayoutEffect(() => {
-    let screenOptions = screenOptions = {
-      headerTitle: hasActiveSite ? 'Change Site' : 'Choose Site',
-      headerBackVisible: mode !== 'select',
-      headerShadowVisible: false,
-      headerTitleAlign: mode !== 'select' ? 'center' : 'left',
-      headerTitleStyle: {
-        fontSize: width >= 360 ? 18 : 14,
-      },
-      headerSearchBarOptions: {
-        placeholder: 'search site code',
-        hintTextColor: 'black',
-        textColor: '#000',
-        autoCapitalize: 'characters',
-        headerIconColor: 'black',
-        onChangeText: event => setSearch(event.nativeEvent.text),
-      },
-    };
+    let screenOptions = {};
+    if (user.sites.length > 0) {
+      screenOptions = {
+        headerTitle: hasActiveSite ? 'Change Site' : 'Choose Site',
+        headerBackVisible: mode !== 'select',
+        headerShadowVisible: false,
+        headerTitleAlign: mode !== 'select' ? 'center' : 'left',
+        headerTitleStyle: {
+          fontSize: width >= 360 ? 18 : 14,
+        },
+        headerSearchBarOptions: {
+          placeholder: 'search site code',
+          hintTextColor: 'black',
+          textColor: '#000',
+          autoCapitalize: 'characters',
+          headerIconColor: 'black',
+          onChangeText: event => setSearch(event.nativeEvent.text),
+        },
+      };
+    } else {
+      screenOptions = {
+        headerShown: false
+      }
+    }
 
     navigation.setOptions(screenOptions);
-  }, [hasActiveSite, mode, navigation]);
+  }, [hasActiveSite, mode, navigation, user.sites.length]);
 
   useEffect(() => {
     if (!user) return;
@@ -68,9 +76,7 @@ const ChooseSite = ({ navigation, route }) => {
     sites = sites.filter(item =>
       item.code.toLowerCase().includes(search.toLowerCase()),
     );
-  }
-
-  // console.log(user);
+  };
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -92,10 +98,10 @@ const ChooseSite = ({ navigation, route }) => {
   const listStyle = { paddingVertical: 10 };
 
   return (
-    <View className="flex-1 bg-white px-3">
+    <View className="flex-1 bg-white dark:bg-neutral-950 px-3">
       <View className="flex-1">
         {user?.sites.length === 0 && (
-          <View className="h-full items-center justify-center px-3">
+          <View className="h-full items-center justify-center">
             <View className="photo">
               <Image
                 className="w-28 xs:w-36 h-28 xs:h-36 rounded-full"
@@ -103,16 +109,20 @@ const ChooseSite = ({ navigation, route }) => {
               />
             </View>
             <View className="mt-3">
-              <Text className="text-blue-600 text-lg xs:text-2xl font-semibold capitalize">
+              <Text className="text-blue-600 text-xl font-semibold capitalize">
                 hello, {user?.name}
               </Text>
             </View>
             <View className="w-4/5 mt-3">
-              <Text className="text-center text-gray-400 text-base xs:text-lg font-semibold mb-2">
-                User Id: {user?.staffId ? user.staffId : user?.email}
+              <Text className="text-center text-gray-400 text-base font-semibold mb-2">
+                {
+                  user?.staffId ? `User Id: ${user.staffId}` :
+                    user?.email ? `Email: ${user.email}`
+                      : `Phone: ${user.phoneNumber}`
+                }
               </Text>
-              <Text className="text-center text-gray-400 text-base xs:text-lg">
-                You don't have any active site. Please contact with admin
+              <Text className="text-center text-gray-400 text-lg">
+                You don't have any site access. Please contact with admin
               </Text>
             </View>
             <View className="mt-5">
@@ -127,7 +137,7 @@ const ChooseSite = ({ navigation, route }) => {
           </View>
         )}
         {user?.sites.length > 0 && sites?.length === 0 && (
-          <View className="h-full items-center justify-center px-3">
+          <View className="h-full items-center justify-center">
             <View className="mt-3">
               <Text className="text-center">
                 <Frown size={60} color="#ccc" />

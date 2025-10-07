@@ -8,7 +8,7 @@ import AppNavigator from './app-navigator';
 import { requestPermissions } from '../../utils';
 import { useAppContext } from '../../hooks';
 import { BackHandler } from 'react-native';
-import { Dialog } from '../components/ui';
+import { Dialog } from '../../components';
 
 
 const RootNavigator = () => {

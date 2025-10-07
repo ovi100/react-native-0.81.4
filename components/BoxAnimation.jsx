@@ -22,7 +22,7 @@ const BoxAnimation = ({ leftBoxText = '', rightBoxText = '', number }) => {
       -1,
       false,
     );
-  }, []);
+  }, [translateX, width]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],

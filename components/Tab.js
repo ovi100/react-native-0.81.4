@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   Dimensions,
   View,
@@ -11,9 +11,9 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from 'react-native-reanimated';
-import {colors, edges, lighten} from '../../../utils/common';
+import { colors, edges, lighten } from '../utils/common';
 
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 /**
  * A customizable tab component with animated transitions between tabs.
@@ -50,9 +50,9 @@ const Tab = ({
   const translateX = useSharedValue(0);
 
   const sizes = {
-    small: {space: 12, fontSize: 12, iconSize: 12},
-    medium: {space: 16, fontSize: 16, iconSize: 16},
-    large: {space: 20, fontSize: 20, iconSize: 20},
+    small: { space: 12, fontSize: 12, iconSize: 12 },
+    medium: { space: 16, fontSize: 16, iconSize: 16 },
+    large: { space: 20, fontSize: 20, iconSize: 20 },
   };
 
   const handleTabPress = index => {
@@ -63,11 +63,11 @@ const Tab = ({
     });
   };
 
-  const contentStyle = {width: width * tabs.length, flexDirection: 'row'};
+  const contentStyle = { width: width * tabs.length, flexDirection: 'row' };
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
-      transform: [{translateX: translateX.value}],
+      transform: [{ translateX: translateX.value }],
     };
   });
 
@@ -89,18 +89,18 @@ const Tab = ({
           },
           track: trackVisibility
             ? {
-                backgroundColor:
-                  theme !== 'classic'
-                    ? lighten(colors[variant], 40)
-                    : 'transparent',
-                borderWidth: 1,
-                borderColor:
-                  theme !== 'classic'
-                    ? lighten(colors[variant], 40)
-                    : 'transparent',
-                borderRadius: theme !== 'classic' ? edges[theme] : 0,
-                padding: sizes[size].space,
-              }
+              backgroundColor:
+                theme !== 'classic'
+                  ? lighten(colors[variant], 40)
+                  : 'transparent',
+              borderWidth: 1,
+              borderColor:
+                theme !== 'classic'
+                  ? lighten(colors[variant], 40)
+                  : 'transparent',
+              borderRadius: theme !== 'classic' ? edges[theme] : 0,
+              padding: sizes[size].space,
+            }
             : {},
           button: {
             backgroundColor: 'transparent',
@@ -161,7 +161,7 @@ const Tab = ({
       {/* Tab Content */}
       <Animated.View style={[contentStyle, animatedStyle]}>
         {tabs.map((tab, index) => (
-          <View key={index} style={{width}}>
+          <View key={index} style={{ width }}>
             {tab.content}
           </View>
         ))}

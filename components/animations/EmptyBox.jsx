@@ -1,7 +1,7 @@
 import LottieView from 'lottie-react-native';
-import animationData from '../../../assets/lottie/loading.json';
+import animationData from '../../assets/lottie/empty-box.json';
 
-const Loading = ({ styles }) => {
+const EmptyBox = ({ styles }) => {
   return (
     <LottieView
       className={`${styles} mx-auto`}
@@ -12,4 +12,4 @@ const Loading = ({ styles }) => {
   );
 };
 
-export default Loading;
+export default EmptyBox;

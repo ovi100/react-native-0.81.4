@@ -9,7 +9,7 @@ import Animated, {
   useDerivedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { edges, lighten, sizes, variants } from '../../../utils/common';
+import { edges, lighten, sizes, variants } from '../utils/common';
 
 const accordionStyle = { color: '#fff', fontSize: 14 };
 const content = (

@@ -6,7 +6,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { elevations } from '../../../utils/common';
+import { elevations } from '../utils/common';
 
 const DEFAULT_SIZE = 30;
 const DEFAULT_ON_COLOR = '#4CD964';
