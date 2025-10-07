@@ -1,5 +1,5 @@
 import {Text, View} from 'react-native';
-import Modal from './Modal';
+import Modal from './ui/Modal';
 import NoInternet from './animations/NoInternet';
 
 const NetInfoModal = ({netInfo}) => {
@@ -8,7 +8,7 @@ const NetInfoModal = ({netInfo}) => {
       isOpen={!netInfo.isConnected || !netInfo.isInternetReachable}
       header="No Internet Connection"
       showCloseButton={false}>
-      <View className="modal-content h-auto max-h-[82%]">
+      <View className="modal-content h-auto">
         <NoInternet styles="w-24 h-24" />
         <View className="text-content mt-5">
           {!netInfo.isConnected && (

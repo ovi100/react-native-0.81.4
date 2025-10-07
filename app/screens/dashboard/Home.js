@@ -7,7 +7,7 @@ const Home = ({ navigation }) => {
   return (
     <View className="flex-1 items-center justify-center bg-white">
       <Text className="w-full text-2xl font-bold text-blue-500 text-center capitalize">
-        Welcome, {user.name}
+        Welcome, {user.name}, HotUpdater is here!
       </Text>
       <Text className="text-lg text-black text-center my-2">
         Active Site : {user.active_site}

@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Platform, Image, KeyboardAvoidingView } f
 import { Controller, useForm } from 'react-hook-form';
 import { LogIn, LockKeyhole, UserRound } from 'lucide-react-native';
 import { toast, validateUserId, width } from '../../../utils';
-import { Button, Input } from '../../components/ui'
+import { Button, Input } from '../../components/ui';
 import { LogoImage } from '../../../assets/images';
 import { useAppContext } from '../../../hooks';
 import { getStorage } from '../../../utils/storage';

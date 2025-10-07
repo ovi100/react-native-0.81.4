@@ -5,6 +5,7 @@
   "scripts": {
     "android": "react-native run-android",
     "app": "react-native start --reset-cache",
+    "update": "npx hot-updater deploy -p 'android' -t '1.x.x'",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
