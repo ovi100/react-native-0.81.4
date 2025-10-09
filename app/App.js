@@ -33,9 +33,7 @@ export default HotUpdater.wrap({
     shouldForceUpdate: true,
     reloadOnForceUpdate: true,
   }),
-  fallbackComponent: ({ progress, status }) => {
-    // console.log(status);
-    // console.log(progress);
+  fallbackComponent: ({ progress }) => {
     const downloadProgress = Math.round(progress * 100);
 
     return (

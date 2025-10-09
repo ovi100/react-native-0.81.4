@@ -8,6 +8,7 @@ import Dialog from './Dialog';
 import Drawer from './Drawer';
 import FalseHeader from './FalseHeader';
 import Input from './Input';
+import MenuButton from './MenuButton';
 import Modal from './Modal';
 import NetInfoModal from './NetInfoModal';
 import Picker from './Picker';
@@ -28,6 +29,7 @@ export {
   Drawer,
   FalseHeader,
   Input,
+  MenuButton,
   Modal,
   NetInfoModal,
   Picker,
