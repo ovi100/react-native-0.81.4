@@ -1,14 +1,14 @@
-import { View, Text, ActivityIndicator, FlatList } from 'react-native';
-import { useAppContext } from '../../../hooks';
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, FlatList, Text, View } from 'react-native';
+import { API_URL } from '../../../app-config';
 import {
   AdHocMenuImage, AuditMenuImage, BmMenuImage, DamageMenuImage, DemandMenuImage,
   DsMenuImage, FdnMenuImage, HistoryMenuImage, NczMenuImage, PackingMenuImage, PickingMenuImage,
   PoCreateMenuImage, ReceivingMenuImage, RtvMenuImage, SearchMenuImage, ShelvingMenuImage,
   SurveyMenuImage, TestMenuImage, TpnMenuImage, WastageMenuImage
 } from '../../../assets/images';
-import { useEffect, useMemo, useState } from 'react';
-import { API_URL } from '../../../app-config';
 import { MenuButton } from '../../../components';
+import { useAppContext } from '../../../hooks';
 
 const Home = ({ navigation }) => {
   const { authInfo } = useAppContext();
@@ -223,7 +223,7 @@ const Home = ({ navigation }) => {
 
   if (loading && !updatedUser) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
+      <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-950">
         <ActivityIndicator />
       </View>
     );
@@ -231,7 +231,7 @@ const Home = ({ navigation }) => {
 
   if (error && !updatedUser) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
+      <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-950">
         <Text>Failed to load user: {String(error.message || error)}</Text>
       </View>
     );
@@ -261,7 +261,7 @@ const Home = ({ navigation }) => {
   const filteredList = filterMenus(updatedUser, menus);
 
   return (
-    <View className="flex-1 items-center justify-center bg-white">
+    <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-950">
       <FlatList
         data={filteredList}
         renderItem={renderItem}

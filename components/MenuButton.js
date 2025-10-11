@@ -1,7 +1,7 @@
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
-import {useNavigation} from '@react-navigation/native';
-import {Image, View, Text, TouchableOpacity} from 'react-native';
-import {menuElevation} from '../utils/common';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { menuElevation } from '../utils/common';
 
 const MenuButton = ({item}) => {
   const navigation = useNavigation();
@@ -19,7 +19,7 @@ const MenuButton = ({item}) => {
           />
         </View>
         <Text
-          className="text text-black text-xs xs:text-sm text-center mt-1"
+          className="text text-black dark:text-gray-300 text-sm text-center mt-1"
           numberOfLines={2}>
           {item.name}
         </Text>

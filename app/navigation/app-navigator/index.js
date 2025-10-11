@@ -1,11 +1,11 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Home from '../../screens/dashboard/Home';
-import ChooseSite from '../../screens/choose-site/ChooseSite';
-import ProfileNavigator from './ProfileNavigator';
-import { useAppContext } from '../../../hooks';
 import { Image } from 'react-native';
 import { ProfileMenuImage } from '../../../assets/images';
 import { Button } from '../../../components';
+import { useAppContext } from '../../../hooks';
+import ChooseSite from '../../screens/choose-site/ChooseSite';
+import Home from '../../screens/dashboard/Home';
+import ProfileNavigator from './ProfileNavigator';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -16,10 +16,7 @@ const AppNavigator = () => {
   if (noActiveSite) {
     return (
       <Stack.Navigator name="Dashboard">
-        <Stack.Screen
-          name="ChooseSite"
-          component={ChooseSite}
-        />
+        <Stack.Screen name="ChooseSite" component={ChooseSite} />
       </Stack.Navigator>
     );
   }
@@ -27,9 +24,11 @@ const AppNavigator = () => {
   const headerButton = (route, navigation) => {
     return (
       <Button
-        type='icon'
+        type="icon"
         icon={<Image source={ProfileMenuImage} className="w-7 h-7" />}
-        onPress={() => navigation.navigate('ProfileRoot')}
+        onPress={() =>
+          navigation.navigate('ProfileRoot', { screen: route.name, data: null })
+        }
       />
     );
   };
@@ -40,8 +39,9 @@ const AppNavigator = () => {
       screenOptions={({ route, navigation }) => {
         const visibleButton = route.name !== 'ProfileRoot';
         return {
-          headerRight: () => visibleButton ? headerButton(route, navigation) : null
-        }
+          headerRight: () =>
+            visibleButton ? headerButton(route, navigation) : null,
+        };
       }}
     >
       <Stack.Screen

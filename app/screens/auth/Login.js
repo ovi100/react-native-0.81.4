@@ -1,13 +1,13 @@
+import { LockKeyhole, LogIn, UserRound } from 'lucide-react-native';
 import { useEffect } from 'react';
-import { View, Text, TouchableOpacity, Platform, Image, KeyboardAvoidingView } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
-import { LogIn, LockKeyhole, UserRound } from 'lucide-react-native';
-import { toast, validateUserId, width } from '../../../utils';
+import { Image, KeyboardAvoidingView, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { LogoImage } from '../../../assets/images';
-import { useAppContext } from '../../../hooks';
-import { getStorage } from '../../../utils/storage';
 import { Button, Input } from '../../../components';
+import { useAppContext } from '../../../hooks';
 import { version } from '../../../package.json';
+import { toast, validateUserId, width } from '../../../utils';
+import { getStorage } from '../../../utils/storage';
 
 
 const Login = ({ navigation }) => {
@@ -85,7 +85,7 @@ const Login = ({ navigation }) => {
                 <Input
                   size="large"
                   icon={<LockKeyhole size={24} color="#64748b" />}
-                  placeholder="Password"
+                  placeholder="Enter password"
                   isPassword
                   onBlur={onBlur}
                   onChangeText={onChange}

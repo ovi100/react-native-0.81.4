@@ -1,4 +1,5 @@
 import Accordion from './Accordion';
+import Box from './Box';
 import BoxAnimation from './BoxAnimation';
 import Button from './Button';
 import CameraScan from './CameraScan';
@@ -17,11 +18,11 @@ import Ribbon from './Ribbon';
 import Switch from './Switch';
 import Tab from './Tab';
 
-
 export {
   Accordion,
-  Button,
+  Box,
   BoxAnimation,
+  Button,
   CameraScan,
   CheckBox,
   CircularProgress,
@@ -36,5 +37,6 @@ export {
   ProgressBar,
   Ribbon,
   Switch,
-  Tab,
+  Tab
 };
+

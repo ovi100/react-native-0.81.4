@@ -1,6 +1,6 @@
+import { Eye, EyeOff } from 'lucide-react-native';
 import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
-import { Eye, EyeOff } from 'lucide-react-native';
 
 /**
  * @param {'small' | 'medium' | 'large'} [size='medium']
@@ -116,7 +116,7 @@ const Input = forwardRef(
         variantBorderClass,
         edgeClass,
         'px-3',
-        'text-black',
+        'text-black dark:text-gray-300',
         splitFix,
       ].join(' ');
     }, [sizeInputClass, variantBorderClass, edgeClass, splitLeft, splitRight]);

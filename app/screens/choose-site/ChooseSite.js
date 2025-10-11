@@ -1,21 +1,27 @@
-import { View, Text, Image, TouchableOpacity, FlatList } from 'react-native';
-import { useAppContext } from '../../../hooks';
-import { setStorage } from '../../../utils/storage';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { AvatarImage, SitesImage } from '../../../assets/images';
-import { width } from '../../../utils';
 import { Frown, LogOutIcon } from 'lucide-react-native';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
+import { AvatarImage, SitesImage } from '../../../assets/images';
 import { Button } from '../../../components';
+import { useAppContext } from '../../../hooks';
+import { width } from '../../../utils';
+import { setStorage } from '../../../utils/storage';
 
 const ChooseSite = ({ navigation, route }) => {
-  const { authInfo } = useAppContext();
+  const { authInfo, deviceInfo } = useAppContext();
   const { setUser, logout } = authInfo;
+  const { theme } = deviceInfo;
   const [search, setSearch] = useState('');
   const user = route?.params?.user || null;
   const mode = route?.params?.mode || 'select';
-  let sites = useMemo(() => (user?.sites ?? []), [user]);
+  let sites = useMemo(() => user?.sites ?? [], [user]);
   const hasActiveSite = Boolean(user && user.active_site);
-
 
   useLayoutEffect(() => {
     let screenOptions = {};
@@ -33,40 +39,43 @@ const ChooseSite = ({ navigation, route }) => {
           hintTextColor: 'black',
           textColor: '#000',
           autoCapitalize: 'characters',
-          headerIconColor: 'black',
+          headerIconColor: theme === 'dark' ? 'white' : 'black',
           onChangeText: event => setSearch(event.nativeEvent.text),
         },
       };
     } else {
       screenOptions = {
-        headerShown: false
-      }
+        headerShown: false,
+      };
     }
 
     navigation.setOptions(screenOptions);
-  }, [hasActiveSite, mode, navigation, user.sites.length]);
+  }, [hasActiveSite, mode, navigation, theme, user.sites.length]);
 
   useEffect(() => {
     if (!user) return;
     const hasOneSite = sites?.length === 1;
     if (hasOneSite) {
-      handleSelect(sites[0])
+      handleSelect(sites[0]);
     }
   }, [handleSelect, sites, user]);
 
-  const handleSelect = useCallback(async site => {
-    if (!user) return;
+  const handleSelect = useCallback(
+    async site => {
+      if (!user) return;
 
-    const updated = { ...user, active_site: site.code };
-    setUser(updated);
-    await setStorage('user', updated);
+      const updated = { ...user, active_site: site.code };
+      setUser(updated);
+      await setStorage('user', updated);
 
-    if (mode === 'switch') {
-      navigation.goBack();
-    } else {
-      navigation.replace('Dashboard');
-    }
-  }, [mode, navigation, setUser, user]);
+      if (mode === 'switch') {
+        navigation.goBack();
+      } else {
+        navigation.replace('Dashboard');
+      }
+    },
+    [mode, navigation, setUser, user],
+  );
 
   if (hasActiveSite && mode === 'select') {
     navigation.navigate('Dashboard');
@@ -76,13 +85,14 @@ const ChooseSite = ({ navigation, route }) => {
     sites = sites.filter(item =>
       item.code.toLowerCase().includes(search.toLowerCase()),
     );
-  };
+  }
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
       className="site-box w-1/4 mt-4"
       onPress={() => handleSelect(item)}
-      key={item.code}>
+      key={item.code}
+    >
       <View className="flex-col items-center">
         <View className="icon">
           <Image
@@ -90,7 +100,9 @@ const ChooseSite = ({ navigation, route }) => {
             source={item.imgURL ? { uri: item.imgURL } : SitesImage}
           />
         </View>
-        <Text className="text text-black mt-3">{item.code}</Text>
+        <Text className="text text-black dark:text-gray-300 mt-3">
+          {item.code}
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -115,11 +127,11 @@ const ChooseSite = ({ navigation, route }) => {
             </View>
             <View className="w-4/5 mt-3">
               <Text className="text-center text-gray-400 text-base font-semibold mb-2">
-                {
-                  user?.staffId ? `User Id: ${user.staffId}` :
-                    user?.email ? `Email: ${user.email}`
-                      : `Phone: ${user.phoneNumber}`
-                }
+                {user?.staffId
+                  ? `User Id: ${user.staffId}`
+                  : user?.email
+                    ? `Email: ${user.email}`
+                    : `Phone: ${user.phoneNumber}`}
               </Text>
               <Text className="text-center text-gray-400 text-lg">
                 You don't have any site access. Please contact with admin
@@ -127,9 +139,9 @@ const ChooseSite = ({ navigation, route }) => {
             </View>
             <View className="mt-5">
               <Button
-                text='Logout'
-                size='small'
-                variant='danger'
+                text="Logout"
+                size="small"
+                variant="danger"
                 icon={<LogOutIcon size={20} color="#fff" />}
                 onPress={logout}
               />
@@ -167,7 +179,7 @@ const ChooseSite = ({ navigation, route }) => {
         )}
       </View>
     </View>
-  )
-}
+  );
+};
 
 export default ChooseSite;
