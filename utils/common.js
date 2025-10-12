@@ -49,7 +49,7 @@ const lighten = (hex, percent = 30) => {
     .join('')}`;
 };
 
-const elevations = () => {
+const getElevation = () => {
   const result = {};
   for (let i = 0; i <= 10; i++) {
     if (i === 0) {
@@ -66,6 +66,8 @@ const elevations = () => {
   }
   return result;
 };
+
+const elevations = getElevation();
 
 const OPTIONS = {
   headerShown: true,

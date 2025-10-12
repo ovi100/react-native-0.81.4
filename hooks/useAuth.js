@@ -47,7 +47,7 @@ const useAuth = () => {
             // console.log('updated user', updatedUser);
             setUser(updatedUser);
             await setStorage('user', updatedUser);
-            await setStorage('loginInfo', loginData);
+            await setStorage('loginInfo', {userId, password});
             // activity
             // await createActivity(
             //   result.user._id,

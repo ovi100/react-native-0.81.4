@@ -1,6 +1,6 @@
 import { Eye, EyeOff } from 'lucide-react-native';
 import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
-import { TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { Pressable, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
 
 /**
  * @param {'small' | 'medium' | 'large'} [size='medium']
@@ -8,7 +8,8 @@ import { TextInput, TouchableOpacity, useColorScheme, View } from 'react-native'
  * @param {'square' | 'rounded' | 'capsule'} [edge='rounded']
  * @param {'default' | 'standard' | 'classic'} [border='default']
  * @param {React.ReactNode|null} [icon=null]
- * @param {'left' | 'right'} [iconPosition='left']
+ * @param {() => void|null} [props.onIconPress=null] - Function to call when the icon is pressed.
+ * @param {'left' | 'right'} [='left']
  * @param {boolean} [isPassword=false]
  */
 const Input = forwardRef(
@@ -19,10 +20,13 @@ const Input = forwardRef(
       edge = 'rounded',
       border = 'default',
       icon = null,
+      onIconPress = null,
       iconPosition = 'left',
       isPassword = false,
       placeholderTextColor,
       value,
+      onChangeText,
+      onBlur,
       ...props
     },
     ref
@@ -151,6 +155,9 @@ const Input = forwardRef(
           className={inputClass}
           placeholderTextColor={placeholderTextColor || '#aaa'}
           secureTextEntry={secureText}
+          value={value ?? ''}
+          onChangeText={onChangeText}
+          onBlur={onBlur}
           {...props}
         />
 
@@ -158,14 +165,16 @@ const Input = forwardRef(
           <TouchableOpacity
             className={floatIconClass}
             onPress={toggleSecure}
-            // hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          // hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <IconWrapper size={20} color={isDarkMode ? '#aaa' : '#000'} />
           </TouchableOpacity>
         )}
 
         {!isPassword && hasIcon && iconPosition === 'right' && (
-          <View className={iconBoxClass}>{icon}</View>
+          <Pressable onPress={onIconPress}>
+            <View className={iconBoxClass}>{icon}</View>
+          </Pressable>
         )}
       </View>
     );

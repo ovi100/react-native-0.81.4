@@ -22,8 +22,8 @@ const Login = ({ navigation }) => {
         const isSaved = await getStorage('savePassword');
         const loginData = await getStorage('loginInfo');
         if (isSaved && loginData && loginData.userId) {
-          setValue('userId', loginData.userId);
-          setValue('password', loginData.password);
+          setValue('userId', loginData.userId, { shouldValidate: true });
+          setValue('password', loginData.password, { shouldValidate: true });
         }
       } catch ({ message }) {
         toast(message);
@@ -31,6 +31,7 @@ const Login = ({ navigation }) => {
     };
     loadCredentials();
   }, [setValue]);
+
 
   const onSubmit = async data => {
     const { userId, password } = data;
@@ -63,7 +64,7 @@ const Login = ({ navigation }) => {
                   placeholder="Enter phone number"
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value}
+                  value={value ?? ""}
                 />
               )}
             />

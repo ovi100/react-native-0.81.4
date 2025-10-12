@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import { API_URL } from '../../../app-config';
 import {
   AdHocMenuImage, AuditMenuImage, BmMenuImage, DamageMenuImage, DemandMenuImage,
@@ -7,10 +7,10 @@ import {
   PoCreateMenuImage, ReceivingMenuImage, RtvMenuImage, SearchMenuImage, ShelvingMenuImage,
   SurveyMenuImage, TestMenuImage, TpnMenuImage, WastageMenuImage
 } from '../../../assets/images';
-import { MenuButton } from '../../../components';
 import { useAppContext } from '../../../hooks';
+import { menuElevation } from '../../../utils/common';
 
-const Home = ({ navigation }) => {
+const Home = ({ navigation, route }) => {
   const { authInfo } = useAppContext();
   const { user, logout } = authInfo;
   const [loading, setLoading] = useState(false);
@@ -54,7 +54,7 @@ const Home = ({ navigation }) => {
     {
       name: 'Receiving',
       icon: ReceivingMenuImage,
-      screen: 'Receiving',
+      screen: 'ReceivingRoot',
       permission: 'Receiving',
       types: ['dc', 'outlet', 'darkstore'],
     },
@@ -214,28 +214,27 @@ const Home = ({ navigation }) => {
     },
   ];
 
-  const renderItem = useMemo(
-    () =>
-      ({ item }) =>
-        <MenuButton item={item} />,
-    [],
+  const renderItem = ({ item }) => (
+    <TouchableOpacity
+      key={item.name}
+      activeOpacity={0.8}
+      className="w-1/3 mb-4"
+      onPress={() => navigation.replace(item.screen)}>
+      <View className="flex-col items-center p-1">
+        <View className="icon" style={menuElevation}>
+          <Image
+            className="w-24 h-24 rounded-xl"
+            source={item.icon}
+          />
+        </View>
+        <Text
+          className="text text-black dark:text-gray-300 text-sm text-center mt-1"
+          numberOfLines={2}>
+          {item.name}
+        </Text>
+      </View>
+    </TouchableOpacity>
   );
-
-  if (loading && !updatedUser) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-950">
-        <ActivityIndicator />
-      </View>
-    );
-  };
-
-  if (error && !updatedUser) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-950">
-        <Text>Failed to load user: {String(error.message || error)}</Text>
-      </View>
-    );
-  };
 
   const filterMenus = (newUser, items) => {
     let siteType;
@@ -259,20 +258,39 @@ const Home = ({ navigation }) => {
   };
 
   const filteredList = filterMenus(updatedUser, menus);
+  const listStyle = { paddingVertical: 10 };
 
   return (
-    <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-950">
-      <FlatList
-        data={filteredList}
-        renderItem={renderItem}
-        keyExtractor={item => item.name}
-        initialNumToRender={12}
-        horizontal={false}
-        numColumns={3}
-        key={`flatList-${3}`}
-        ListFooterComponentStyle={{ paddingVertical: 10 }}
-      />
-    </View>
+    <>
+      {loading && !updatedUser && (
+        <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-950 p-3">
+          <ActivityIndicator size="large" color="#EB4B50" />
+          <Text className="mt-4 text-gray-400 text-base text-center">
+            Loading user data. Please wait......
+          </Text>
+        </View>
+      )}
+      {error && !updatedUser && (
+        <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-950 p-3">
+          <Text>Failed to load user: {String(error.message || error)}</Text>
+        </View>
+      )}
+      {!loading && !error && updatedUser && (
+
+        <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-950">
+          <FlatList
+            data={filteredList}
+            renderItem={renderItem}
+            keyExtractor={item => item.name}
+            initialNumToRender={12}
+            horizontal={false}
+            numColumns={3}
+            key={`flatList-${3}`}
+            ListFooterComponentStyle={listStyle}
+          />
+        </View>
+      )}
+    </>
   );
 };
 

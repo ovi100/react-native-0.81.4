@@ -42,11 +42,11 @@ export default HotUpdater.wrap({
         showCloseButton={false}
         header="Live update is in progress">
         <View className="modal-content">
-          <Text className="text-sm md:text-lg text-black text-center font-medium">
+          <Text className="text-sm xs:text-lg text-black text-center font-medium">
             Applying the live update ensures you will get the latest version of
             the application.
           </Text>
-          <Text className="text-xs md:text-base text-black text-center font-semibold my-2.5">
+          <Text className="text-xs xs:text-base text-black text-center font-semibold my-2.5">
             Downloading ({downloadProgress})%
           </Text>
           <View className="">

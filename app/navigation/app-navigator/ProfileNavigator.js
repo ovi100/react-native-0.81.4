@@ -5,12 +5,20 @@ import Shortcuts from '../../screens/dashboard/profile/Shortcuts';
 import Settings from '../../screens/dashboard/profile/Settings';
 import AppInfo from '../../screens/dashboard/profile/AppInfo';
 import ChooseSite from '../../screens/choose-site/ChooseSite';
+import { width } from '../../../utils';
 
 const ProfileNavigator = () => {
   const Stack = createNativeStackNavigator();
 
+  const screenSettings = {
+    headerTitleAlign: 'center',
+    headerTitleStyle: {
+      fontSize: width >= 360 ? 18 : 16,
+    },
+  }
+
   return (
-    <Stack.Navigator name="ProfileRoot">
+    <Stack.Navigator name="ProfileRoot" screenOptions={screenSettings}>
       <Stack.Screen
         name="Profile"
         component={Profile}

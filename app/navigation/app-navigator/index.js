@@ -4,8 +4,9 @@ import { ProfileMenuImage } from '../../../assets/images';
 import { Button } from '../../../components';
 import { useAppContext } from '../../../hooks';
 import ChooseSite from '../../screens/choose-site/ChooseSite';
-import Home from '../../screens/dashboard/Home';
 import ProfileNavigator from './ProfileNavigator';
+import Home from '../../screens/dashboard/Home';
+import ReceivingNavigator from './ReceivingNavigator';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -22,12 +23,13 @@ const AppNavigator = () => {
   }
 
   const headerButton = (route, navigation) => {
+    // const params = route.name == "Profile" ? {userId: user.id}: 
     return (
       <Button
         type="icon"
         icon={<Image source={ProfileMenuImage} className="w-7 h-7" />}
         onPress={() =>
-          navigation.navigate('ProfileRoot', { screen: route.name, data: null })
+          navigation.push('ProfileRoot', { screen: route.name, userId: user.id, data: null })
         }
       />
     );
@@ -37,12 +39,12 @@ const AppNavigator = () => {
     <Stack.Navigator
       name="Dashboard"
       screenOptions={({ route, navigation }) => {
-        const visibleButton = route.name !== 'ProfileRoot';
+        // const visibleButton = route.name !== 'ProfileRoot';
         return {
-          headerRight: () =>
-            visibleButton ? headerButton(route, navigation) : null,
+          headerRight: () => headerButton(route, navigation),
         };
       }}
+      initialParams={{ userId: user.id }}
     >
       <Stack.Screen
         name="Home"
@@ -52,11 +54,17 @@ const AppNavigator = () => {
         }}
       />
       <Stack.Screen
+        name="ReceivingRoot"
+        component={ReceivingNavigator}
+        options={{
+          headerShown: false
+        }}
+      />
+      <Stack.Screen
         name="ProfileRoot"
         component={ProfileNavigator}
         options={{
-          headerShown: false,
-          headerRight: () => null,
+          headerShown: false
         }}
       />
     </Stack.Navigator>

@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
-import {colors, elevations} from '../utils/common';
+import { elevations } from '../utils/common';
 
 /**
  * A customizable Box component with support for style, Shadow states.
@@ -16,7 +16,7 @@ const Box = ({style = null, elevation = 0, children}) => {
   const boxStyle = [
     styles.box,
     style,
-    elevation !== undefined && elevations[elevation],
+    elevation && elevations[elevation],
   ];
 
   return <View style={boxStyle}>{children}</View>;

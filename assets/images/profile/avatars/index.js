@@ -19,7 +19,7 @@ import Av18Image from './av18.png';
 import Av19Image from './av19.png';
 import Av20Image from './av20.png';
 
-const avatars = [
+export const avatars = [
   Av1Image,
   Av2Image,
   Av3Image,
@@ -41,5 +41,3 @@ const avatars = [
   Av19Image,
   Av20Image,
 ];
-
-export {avatars};
