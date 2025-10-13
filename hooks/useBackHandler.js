@@ -1,5 +1,5 @@
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { useCallback } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { useEffect } from 'react';
 import { BackHandler } from 'react-native';
 
 const useBackHandler = (
@@ -8,19 +8,19 @@ const useBackHandler = (
 ) => {
   const navigation = useNavigation();
 
-  useFocusEffect(
-    useCallback(() => {
-      const onBackPress = () => {
-        navigation.replace(screen, params);
-        return true; // Prevent default behavior
-      };
+  useEffect(() => {
+    const onBackPress = () => {
+      navigation.replace(screen, params);
+      return true; // Prevent default behavior
+    };
 
-      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onBackPress,
+    );
 
-      return () =>
-        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation, screen, params]),
-  );
+    return () => backHandler.remove();
+  }, [navigation, screen, params])
 };
 
 export default useBackHandler;

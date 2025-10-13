@@ -1,40 +1,108 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { FalseHeader, Ribbon } from '../../../../components';
-import { useAppContext } from '../../../../hooks';
-import { toast } from '../../../../utils';
+import { useAppContext, useBackHandler } from '../../../../hooks';
+import { FlatListStyle, serverMessage, toast } from '../../../../utils';
 import { getStorage } from '../../../../utils/storage';
+import { useFocusEffect } from '@react-navigation/native';
+import { API_URL } from '../../../../app-config';
 
 const DocumentDetails = ({ navigation, route }) => {
-  const { items, poNumber, receivingPlant, storageLocation, vendor } = route.params;
+  const { screen, po, dn, childPack } = route.params;
   const { authInfo } = useAppContext();
   const { user } = authInfo;
+  const [isLoading, setIsLoading] = useState(false);
+  const [articles, setArticles] = useState([]);
+  // const [documentDetails, setDocumentDetails] = useState(null);
   const [pressMode, setPressMode] = useState(false);
-  const tableHeader = poNumber
+  const DOC_TYPE = po ? "po" : dn ? "dn" : childPack ? "child" : null;
+  const tableHeader = po
     ? ['Article Info', 'PO Qty', 'GRN Qty', 'REM Qty']
     : ['Article Info', 'Quantity', 'Action'];
 
-  useEffect(() => {
-    const getAsyncStorage = async () => {
-      const [press] =
-        await Promise.all([
-          getStorage('pressMode'),
-        ]);
-      setPressMode(press);
+  // Custom hook to navigate screen
+  useBackHandler(screen);
 
-    };
-    getAsyncStorage();
-  }, []);
+  const endpoint = useMemo(() => {
+    if (!DOC_TYPE) return null;
+    if (DOC_TYPE === "po") return `${API_URL}api/po/receiving-list/${po}`;
+    if (DOC_TYPE === "dn") return `${API_URL}api/dn/receiving-list/${dn}`;
+    if (DOC_TYPE === "child") return `${API_URL}api/child-pack/receiving-list/${childPack}`;
+    return null;
+  }, [DOC_TYPE, childPack, dn, po]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const getAsyncStorage = async () => {
+        const [press] =
+          await Promise.all([
+            getStorage('pressMode'),
+          ]);
+        setPressMode(press);
+
+      };
+      getAsyncStorage();
+    }, [])
+  );
+
+  // Fetching document details
+  const fetchData = async (url, token, signal) => {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      signal
+    });
+
+    const json = await response.json();
+
+    if (!response.ok || !json?.success) {
+      throw new Error(serverMessage(json?.message || response.statusText));
+    }
+
+    return json?.data ?? {};
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      let ignore = false;
+      const ac = new AbortController();
+
+      (async () => {
+        try {
+          setIsLoading(true);
+          const data = await fetchData(endpoint, user.token, ac.signal);
+          if (ignore) return;
+
+          const items = data?.itemList ?? [];
+
+          setArticles(items);
+        } catch (err) {
+          if (!ignore && err?.name !== "AbortError") {
+            toast(serverMessage(err.message));
+          }
+        } finally {
+          if (!ignore) setIsLoading(false);
+        }
+      })();
+
+      return () => {
+        ignore = true;
+        ac.abort();
+      };
+    }, [endpoint, user.token])
+  );
 
   const renderTableHeader = item => {
-    const poStyles = `${item === 'Article Info' ? 'w-2/5' : 'w-1/5'} text-xs`;
-    const dnStyles = `${item === 'Action' ? 'w-1/4 xs:w-1/5' : 'w-[37.5%] xs:w-2/5'
-      } text-xs`;
+    const poStyles = `${item === 'Article Info' ? 'w-2/5' : 'w-1/5'}`;
+    const dnStyles = `${item === 'Action' ? 'w-1/4 xs:w-1/5' : 'w-[37.5%] xs:w-2/5'}`;
 
     return (
       <Text
-        className={`${poNumber ? poStyles : dnStyles
-          } text-white sm:text-sm text-center font-bold`}
+        className={`${po ? poStyles : dnStyles} text-white text-xs xs:text-sm text-center font-bold`}
         key={item}>
         {item}
       </Text>
@@ -53,16 +121,20 @@ const DocumentDetails = ({ navigation, route }) => {
         ? item.quantity - item.grnQuantity
         : item.quantity - item.totalReceivedQuantity;
       return remQty;
+    };
+
+    const params = {
+      ...item,
+      remainingQuantity: getRemainingQuantity(),
+      po, dn, childPack
     }
-
-
     return (
       <Wrapper
         key={item.poItem}
         onPress={() =>
           notSameSite
             ? toast(`Article ${item.material} is not for ${user.active_site}`)
-            : navigation.replace('ArticleDetails', item)
+            : navigation.replace('ArticleDetails', params)
         }
         className={`relative overflow-hidden flex-row items-center border 
           ${notSameSite ? 'border-red-500' : 'border-tb'} rounded-lg mt-2.5 px-3 py-2`}>
@@ -71,7 +143,7 @@ const DocumentDetails = ({ navigation, route }) => {
             <Text className="text-black text-xs xs:text-sm" numberOfLines={1}>
               ({Number(item.poItem) / 10}) {item.material}
             </Text>
-            {item.plant !== user.site && (
+            {item.plant !== user.active_site && (
               <Text
                 className="text-red-500 text-xs xs:text-sm font-medium"
                 numberOfLines={1}>
@@ -104,35 +176,43 @@ const DocumentDetails = ({ navigation, route }) => {
   };
 
   return (
-    <View className="bg-white flex-1">
-      <View className="flex-1 h-full px-2 sm:px-4">
-        <FalseHeader />
-        <View className="content flex-1 justify-between pb-2">
-          <View
-            className={`table h-full`}>
-            <View className="table-header flex-row bg-th text-center p-2">
-              {tableHeader.map(th => renderTableHeader(th))}
-            </View>
-            <FlatList
-              data={items}
-              renderItem={renderPoItem}
-              keyExtractor={item => item.poItem}
-              initialNumToRender={10}
-              // onEndReached={handleEndReached}
-              // ListFooterComponent={items.length > 10 ? renderFooter : null}
-              ListFooterComponentStyle={{ paddingVertical: 10 }}
-            // refreshControl={
-            //   <RefreshControl
-            //     colors={['#fff']}
-            //     onRefresh={onRefresh}
-            //     progressBackgroundColor="#000"
-            //     refreshing={refreshing}
-            //   />
-            // }
-            />
-          </View>
+    <>
+      {isLoading && (
+        <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-950">
+          <ActivityIndicator size="large" color="#EB4B50" />
+          <Text className="mt-4 text-gray-400 text-base text-center">
+            Loading {po ? 'po' : dn ? 'dn' : 'child pack'} data. Please wait......
+          </Text>
+        </View>
+      )}
+      {!isLoading && articles.length > 0 && (
+        <View className="flex-1 bg-white dark:bg-neutral-950 p-3">
+          <View className="flex-1 h-full px-2 sm:px-4">
+            <FalseHeader />
+            <View className="content flex-1 justify-between pb-2">
+              <View
+                className={`table h-full`}>
+                <View className="table-header flex-row bg-th text-center p-2">
+                  {tableHeader.map(th => renderTableHeader(th))}
+                </View>
+                <FlatList
+                  data={articles}
+                  renderItem={renderPoItem}
+                  keyExtractor={item => item.poItem}
+                  initialNumToRender={10}
+                  ListFooterComponentStyle={FlatListStyle}
+                // refreshControl={
+                //   <RefreshControl
+                //     colors={['#fff']}
+                //     onRefresh={onRefresh}
+                //     progressBackgroundColor="#000"
+                //     refreshing={refreshing}
+                //   />
+                // }
+                />
+              </View>
 
-          {/* {po && hasGrnItems && (
+              {/* {po && hasGrnItems && (
             <View className="button">
               {!enableGrnReview && (
                 <Button
@@ -165,10 +245,12 @@ const DocumentDetails = ({ navigation, route }) => {
               />
             </View>
           )} */}
-          {/* <CameraScan /> */}
+              {/* <CameraScan /> */}
+            </View>
+          </View>
         </View>
-      </View>
-    </View>
+      )}
+    </>
   )
 }
 

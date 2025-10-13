@@ -20,7 +20,7 @@ const Receiving = ({ navigation, route }) => {
 
 
   // Custom hook to navigate screen
-  // useBackHandler('Home');
+  useBackHandler('Home');
 
   useLayoutEffect(() => {
     let screenOptions = {};
@@ -42,45 +42,45 @@ const Receiving = ({ navigation, route }) => {
 
     try {
       setIsChecking(true);
-      await fetch(API_URL + 'api/po/receiving-list/' + document, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-          'Content-Type': 'application/json',
-        }
-      })
+      await fetch(API_URL + `api/service/check-document/?documentNumber=${document}&documentType=${type}&site=${user.active_site}`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+            'Content-Type': 'application/json',
+          }
+        })
         .then(response => response.json())
         .then(async result => {
           if (result.success) {
+            let params = {};
             if (type === 'po') {
-              const params = {
-                items: result.data.itemList,
-                poNumber: result.data.poNumber,
-                receivingPlant: result.data.plant,
-                storageLocation: result.data.storageLocation,
-                vendor: result.data.vendor
+              params = {
+                po: result.documentNumber,
               };
-              navigation.replace('DocumentDetails', params);
+            } else if (type === 'dn') {
+              params = {
+                dn: result.documentNumber,
+              };
+            } else {
+              params = {
+                childPackNumber: result.documentNumber,
+              };
             }
+            navigation.replace('DocumentDetails', params);
 
           } else {
             let message = result.message.trim();
             message = message.includes('Could not open connection')
-              ? 'Server is off 🙁'
+              ? 'SAP server is off 🙁'
               : message;
             toast(message);
-            // if (message === 'MIS Logged Off the PC where BAPI is Hosted') {
-            //   //log user activity
-            //   await createActivity(user._id, 'error', message);
-            // }
           }
         })
         .catch(error => {
           const message = error.message.includes('JSON Parse error')
             ? 'Server is down'
-            : error.message.includes('Could not open connection')
-              ? 'Server is offline'
-              : error.message;
+            : error.message;
           toast('customError', message);
         });
     } catch (error) {
@@ -108,7 +108,7 @@ const Receiving = ({ navigation, route }) => {
       toast('Enter a valid PO, DN or child pack number');
       return;
     } else {
-      const type = isValidPo ? 'po' : isValidDn ? 'dn' : 'child pack'
+      const type = isValidPo ? 'po' : isValidDn ? 'dn' : 'childPack'
       Keyboard.dismiss();
       await checkDocument(search, type);
     }

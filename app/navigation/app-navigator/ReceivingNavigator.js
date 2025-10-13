@@ -26,10 +26,11 @@ const ReceivingNavigator = () => {
   const leftButton = (route, navigation) => {
     const { screen } = route.params;
     const style = { marginLeft: -5 }
+    // console.log('back button params', route.params);
     return (
       <HeaderBackButton
         style={style}
-        onPress={() => navigation.replace(screen)} />
+        onPress={() => navigation.replace(screen, route.params)} />
     )
   };
 
@@ -72,12 +73,19 @@ const ReceivingNavigator = () => {
       <Stack.Screen
         name="DocumentDetails"
         component={DocumentDetails}
-        options={{ headerTitle: 'Document Details', headerTitleAlign: 'center' }}
+        options={{
+          headerTitle: 'Document Details',
+          ...screenSettings
+        }}
         initialParams={{ screen: "Receiving" }}
       />
       <Stack.Screen
         name="ArticleDetails"
         component={ArticleDetails}
+        options={{
+          // headerTitle: 'Article Details',
+          ...screenSettings
+        }}
         initialParams={{ screen: "DocumentDetails" }}
       />
       <Stack.Screen
