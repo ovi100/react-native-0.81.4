@@ -1,7 +1,4 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Image } from 'react-native';
-import { ProfileMenuImage } from '../../../assets/images';
-import { Button } from '../../../components';
 import { useAppContext } from '../../../hooks';
 import ChooseSite from '../../screens/choose-site/ChooseSite';
 import ProfileNavigator from './ProfileNavigator';
@@ -20,38 +17,17 @@ const AppNavigator = () => {
         <Stack.Screen name="ChooseSite" component={ChooseSite} />
       </Stack.Navigator>
     );
-  }
-
-  const headerButton = (route, navigation) => {
-    // const params = route.name == "Profile" ? {userId: user.id}: 
-    return (
-      <Button
-        type="icon"
-        icon={<Image source={ProfileMenuImage} className="w-7 h-7" />}
-        onPress={() =>
-          navigation.push('ProfileRoot', { screen: route.name, userId: user.id, data: null })
-        }
-      />
-    );
   };
 
   return (
-    <Stack.Navigator
-      name="Dashboard"
-      screenOptions={({ route, navigation }) => {
-        // const visibleButton = route.name !== 'ProfileRoot';
-        return {
-          headerRight: () => headerButton(route, navigation),
-        };
-      }}
-      initialParams={{ userId: user.id }}
-    >
+    <Stack.Navigator name="Dashboard">
       <Stack.Screen
         name="Home"
         component={Home}
         options={{
           headerShadowVisible: false,
         }}
+        initialParams={{ ...user }}
       />
       <Stack.Screen
         name="ReceivingRoot"

@@ -67,6 +67,47 @@ export const calculateShelfLife = (mfgDate: Date, expDate: Date) => {
   return 0;
 };
 
+export const formatDateText = (text: string) => {
+  let value = text.replace(/\D/g, '');
+
+  if (value.length > 2 && value[2] !== '/') {
+    value = value.slice(0, 2) + '/' + value.slice(2);
+  }
+  if (value.length > 5 && value[5] !== '/') {
+    value = value.slice(0, 5) + '/' + value.slice(5);
+  }
+
+  return value.slice(0, 8);
+};
+
+export const validateDate = (value: string, type: string) => {
+  const dateRegex = /^\d{2}\/\d{2}\/\d{2}$/;
+  const today = new Date();
+  let [day, month, year] = value.split('/').map(Number);
+  const currentYear = new Date().getFullYear() % 100;
+  const fullYear = year + 2000;
+  const daysInMonth = new Date(fullYear, month, 0).getDate();
+  const inputDate = new Date(fullYear, month - 1, day);
+  const minYear = currentYear - 5;
+  const maxYear = currentYear + 8;
+
+  if (!dateRegex.test(value)) {
+    return "Invalid date format";
+  } else if (month < 1 || month > 12) {
+    return 'Invalid month (1-12)';
+  } else if (day < 1 || day > daysInMonth) {
+    return `Invalid day (1-${daysInMonth})`;
+  } else if (type === 'mfg' && (year < minYear || inputDate >= today)) {
+    return 'MFG date must be within 5 years and before today';
+  } else if (type === 'exp' && (year > maxYear || inputDate <= today)) {
+    return 'EXP date must be within 8 years and after today';
+  } else {
+    return true;
+  }
+
+};
+
+
 export const handleDate = (value: string, type: string) => {
   value = value.replace(/\D/g, '');
 
@@ -121,4 +162,10 @@ export const handleDate = (value: string, type: string) => {
   }
 
   return { date: inputDate, text: value };
+};
+
+export const getDate = (text: string) => {
+  const [day, month, year] = text.split('/').map(Number);
+  const date = new Date(year + 2000, month - 1, day);
+  return date;
 };

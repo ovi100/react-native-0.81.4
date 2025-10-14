@@ -1,24 +1,45 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import { API_URL } from '../../../app-config';
 import {
   AdHocMenuImage, AuditMenuImage, BmMenuImage, DamageMenuImage, DemandMenuImage,
   DsMenuImage, FdnMenuImage, HistoryMenuImage, NczMenuImage, PackingMenuImage, PickingMenuImage,
-  PoCreateMenuImage, ReceivingMenuImage, RtvMenuImage, SearchMenuImage, ShelvingMenuImage,
+  PoCreateMenuImage, ProfileMenuImage, ReceivingMenuImage, RtvMenuImage, SearchMenuImage, ShelvingMenuImage,
   SurveyMenuImage, TestMenuImage, TpnMenuImage, WastageMenuImage
 } from '../../../assets/images';
 import { useAppContext } from '../../../hooks';
 import { menuElevation } from '../../../utils/common';
+import { Button } from '../../../components';
 
 const Home = ({ navigation, route }) => {
+  const { id, token } = route.params;
   const { authInfo } = useAppContext();
-  const { user, logout } = authInfo;
+  const { logout } = authInfo;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [updatedUser, setUpdatedUser] = useState(null);
 
+  const rightButton = useMemo(() => {
+    return (
+      <Button
+        type="icon"
+        icon={<Image source={ProfileMenuImage} className="w-7 h-7" />}
+        onPress={() =>
+          navigation.push('ProfileRoot', { screen: route.name, data: route.params })
+        }
+      />
+    );
+  }, [navigation, route.name, route.params]);
+
+  useLayoutEffect(() => {
+    const options = {
+      headerRight: () => rightButton,
+    };
+    navigation.setOptions(options);
+  }, [navigation, rightButton, route]);
+
   useEffect(() => {
-    const fetchUser = async (id, token) => {
+    const fetchUser = async () => {
       try {
         setLoading(true);
         const response = await fetch(API_URL + "api/users/profile/" + id, {
@@ -26,11 +47,12 @@ const Home = ({ navigation, route }) => {
         });
         const result = await response.json();
         const data = result.data;
-        if (!data.isActive) {
+        if (!data?.isActive) {
           logout();
         } else {
+          delete route.params.screen;
           const newUser = {
-            ...user,
+            ...route.params,
             staffId: data.staffId,
             designation: data.designation,
             roles: data.roles,
@@ -45,10 +67,10 @@ const Home = ({ navigation, route }) => {
         setLoading(false);
       }
     };
-    if (user) {
-      fetchUser(user.id, user.token);
+    if (id && token) {
+      fetchUser();
     }
-  }, [logout, user]);
+  }, [id, logout, route.params, token]);
 
   const menus = [
     {

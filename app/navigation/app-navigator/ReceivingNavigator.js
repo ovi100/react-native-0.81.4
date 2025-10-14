@@ -41,7 +41,7 @@ const ReceivingNavigator = () => {
         type="icon"
         icon={<Image source={ProfileMenuImage} className="w-7 h-7" />}
         onPress={() =>
-          navigation.push('ProfileRoot', { screen: route.name, userId: user.id, data: null })
+          navigation.push('ProfileRoot', { screen: route.name, userId: user.id, data: route.params })
         }
       />
     );
@@ -51,7 +51,6 @@ const ReceivingNavigator = () => {
     <Stack.Navigator
       name="ReceivingRoot"
       screenOptions={({ route, navigation }) => {
-        console.log(route);
         // const visibleButton = route.name !== 'ProfileRoot';
         return {
           headerLeft: () => leftButton(route, navigation),

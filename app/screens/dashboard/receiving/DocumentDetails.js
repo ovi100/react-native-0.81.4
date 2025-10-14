@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { FalseHeader, Ribbon } from '../../../../components';
 import { useAppContext, useBackHandler } from '../../../../hooks';
@@ -22,6 +22,38 @@ const DocumentDetails = ({ navigation, route }) => {
 
   // Custom hook to navigate screen
   useBackHandler(screen);
+
+  const customHeader = useMemo(
+    () => (
+      <View className="text px-1 xs:px-2">
+        {po && (
+          <Text className="text-sm xs:text-base text-sh text-center font-medium">
+            {`PO ${po} Details`}
+          </Text>
+        )}
+        {dn && (
+          <>
+            {childPack && (
+              <Text className="text-sm xs:text-base text-sh text-center font-medium">
+                {`Pack ${childPack} Details`}
+              </Text>
+            )}
+            <Text
+              className={`${childPack ? 'text-xs' : 'text-sm xs:text-base'
+                }  text-sh text-center font-medium`}>
+              {`DN ${dn} Details`}
+            </Text>
+          </>
+        )}
+
+      </View>
+    ),
+    [childPack, dn, po]
+  );
+
+  useLayoutEffect(() => {
+    navigation.setOptions({ headerTitle: () => customHeader });
+  }, [customHeader, navigation]);
 
   const endpoint = useMemo(() => {
     if (!DOC_TYPE) return null;
@@ -126,7 +158,10 @@ const DocumentDetails = ({ navigation, route }) => {
     const params = {
       ...item,
       remainingQuantity: getRemainingQuantity(),
-      po, dn, childPack
+      po,
+      dn,
+      childPack,
+      site: user.active_site
     }
     return (
       <Wrapper

@@ -1,68 +1,139 @@
 import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Image, TextInput } from 'react-native';
 import { useBackHandler } from '../../../../hooks';
-import { BatchImage, BoxImage, MrpImage, SapImage, SwGreenImage, SwRedImage, VatImage } from '../../../../assets/images';
-import { calculateShelfLife, handleDate } from '../../../../utils';
+import {
+  BatchImage,
+  BoxImage,
+  MrpImage,
+  // SapImage,
+  SwGreenImage,
+  SwRedImage,
+  VatImage
+} from '../../../../assets/images';
+import { calculateShelfLife, formatDateText, getDate, validateDate } from '../../../../utils';
 import { Button, CircularProgress } from '../../../../components';
+import { useForm, Controller } from 'react-hook-form';
+
+// Helper to show tiny error text
+const ErrorText = ({ msg }) =>
+  msg ? (
+    <Text className="text-[10px] text-red-500 mt-1">{String(msg)}</Text>
+  ) : null;
 
 const ArticleDetails = ({ navigation, route }) => {
-  const { screen, po, dn, childPack, material, description, remainingQuantity, taxRate, unitVat, logicVat } = route.params;
-  const [isLoading, setIsLoading] = useState(false);
+  const {
+    screen,
+    po,
+    dn,
+    // childPack,
+    site,
+    material,
+    description,
+    remainingQuantity,
+    poItem,
+    taxRate,
+    unit,
+    unitPrice,
+    unitVat,
+    logicVat,
+  } = route.params;
+
   const [isButtonLoading, setIsButtonLoading] = useState(false);
-  const [newQuantity, setNewQuantity] = useState(
-    dn ? remainingQuantity.toString() : '',
-  );
-  const [challanQuantity, setChallanQuantity] = useState(newQuantity);
-  const [priceInfo, setPriceInfo] = useState([]);
-  const [mfgDate, setMfgDate] = useState(new Date());
-  const [expDate, setExpDate] = useState(new Date());
-  const [batchNo, setBatchNo] = useState('');
-  const [itemVatAmount, setItemVatAmount] = useState(0);
-  const [mrp, setMrp] = useState('');
 
   // Custom hook to navigate screen
   useBackHandler(screen);
 
-  const customHeader = useMemo(() => (
-    <View className="text px-1 xs:px-2">
-      <Text className="text-sm xs:text-base text-sh text-center font-medium capitalize">
-        article {' ' + material}
-      </Text>
-      <Text
-        className="w-56 xs:w-full mx-auto text-xs xs:text-sm text-sh text-center font-medium capitalize"
-        numberOfLines={2}>
-        {description}
-      </Text>
-    </View>
-  ), [description, material]);
+  const customHeader = useMemo(
+    () => (
+      <View className="text px-1 xs:px-2">
+        <Text className="text-sm xs:text-base text-sh text-center font-medium capitalize">
+          article {' ' + material}
+        </Text>
+        <Text
+          className="w-56 xs:w-full mx-auto text-xs xs:text-sm text-sh text-center font-medium capitalize"
+          numberOfLines={2}
+        >
+          {description}
+        </Text>
+      </View>
+    ),
+    [description, material]
+  );
 
   useLayoutEffect(() => {
-    const options = {
-      headerTitle: () => customHeader,
-    };
-    navigation.setOptions(options);
-  }, [description, customHeader, material, navigation]);
+    navigation.setOptions({ headerTitle: () => customHeader });
+  }, [customHeader, navigation]);
 
-  const calculateVatAmount = (quantity) => {
-    let vatAmount = 0;
-    if (unitVat === 0) {
-      vatAmount = 0;
-    } else if (logicVat !== null) {
-      vatAmount = Math.min(unitVat, logicVat) * quantity;
-    } else {
-      vatAmount = unitVat * quantity;
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting, isValid },
+  } = useForm({
+    mode: 'onChange',
+    defaultValues: {
+      quantity: dn ? String(remainingQuantity ?? '') : '',
+      challanQuantity: dn ? String(remainingQuantity ?? '') : '',
+      batchNumber: '',
+      mrp: '',
+      mfgDate: '',
+      expDate: '',
+    },
+  });
+
+  // Watch values for live calculations
+  const quantity = watch('quantity');
+  const mfgText = watch('mfgDate');
+  const expText = watch('expDate');
+
+  // VAT calculation (derived)
+  const itemVatAmount = (() => {
+    const qty = Number(quantity || 0);
+    if (!qty || unitVat === 0) return 0;
+    if (logicVat != null) return Math.min(unitVat, logicVat) * qty;
+    return unitVat * qty;
+  })();
+
+  // Shelf life calculation (derived)
+  const shelfLife = calculateShelfLife(getDate(mfgText), getDate(expText));
+
+
+  const onSubmit = async (data) => {
+    try {
+      // setIsButtonLoading(true);
+
+      const postData = {
+        material,
+        poNumber: po,
+        poItem,
+        unitVat,
+        unitPrice,
+        site,
+        unit,
+        quantity: +data.quantity,
+        challanQuantity: +data.challanQuantity,
+        batchNumber: data.batchNumber,
+        mrp: +data.mrp,
+        mfgDate: getDate(data.mfgDate),
+        expDate: getDate(data.expDate),
+      };
+
+      console.log('Submitted payload:', postData);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsButtonLoading(false);
     }
-    setItemVatAmount(vatAmount);
   };
-
-  const shelfLife = calculateShelfLife(mfgDate?.date, expDate?.date);
 
   return (
     <View className="flex-1 bg-white dark:bg-neutral-950">
       <KeyboardAvoidingView
         className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <ScrollView>
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView keyboardShouldPersistTaps="handled">
           <View className="flex-1 px-4">
             <View className="content flex-1 justify-between pb-2">
               <View className="input-boxes mt-2">
@@ -79,55 +150,82 @@ const ArticleDetails = ({ navigation, route }) => {
                       {remainingQuantity}
                     </Text>
                   </View>
+
                   <View className="input-box flex-row items-center mt-2">
-                    <TextInput
-                      className="w-1/2 h-14 bg-[#F5F6FA] border border-t-0 border-black/25 text-[#5D80C5] text-xs xs:text-sm rounded-2xl px-4 mr-2"
-                      placeholder="Enter quantity"
-                      placeholderTextColor="#5D80C5"
-                      selectionColor="#5D80C5"
-                      keyboardType="numeric"
-                      value={newQuantity.toString()}
-                      onChangeText={value => {
-                        setNewQuantity(value);
-                        setChallanQuantity(value);
-                        calculateVatAmount(value);
+                    <Controller
+                      control={control}
+                      name="quantity"
+                      rules={{
+                        required: 'Quantity is required',
+                        validate: (v) => {
+                          const n = Number(v);
+                          if (Number.isNaN(n)) return 'Must be a number';
+                          if (n <= 0) return 'Must be greater than 0';
+                          if (remainingQuantity != null && n > Number(remainingQuantity))
+                            return 'Receive quantity exceed';
+                          return true;
+                        },
                       }}
+                      render={({ field: { value, onChange, onBlur } }) => (
+                        <TextInput
+                          className="w-1/2 h-14 bg-[#F5F6FA] border border-t-0 border-black/25 text-[#5D80C5] text-xs xs:text-sm rounded-2xl px-4 mr-2"
+                          placeholder="Enter quantity"
+                          placeholderTextColor="#5D80C5"
+                          selectionColor="#5D80C5"
+                          keyboardType="numeric"
+                          value={value}
+                          onChangeText={(t) => {
+                            onChange(t);
+                            setValue('challanQuantity', t, { shouldValidate: true });
+                          }}
+                          onBlur={onBlur}
+                        />
+                      )}
                     />
 
-                    <TextInput
-                      className="w-1/2 h-14 bg-[#F5F6FA] border border-t-0 border-black/25 text-[#5D80C5] text-xs xs:text-sm rounded-2xl px-4"
-                      placeholder="challan quantity"
-                      placeholderTextColor="#5D80C5"
-                      selectionColor="#5D80C5"
-                      keyboardType="numeric"
-                      value={challanQuantity.toString()}
-                      onChangeText={value => setChallanQuantity(value)}
+                    {/* challanQuantity */}
+                    <Controller
+                      control={control}
+                      name="challanQuantity"
+                      rules={{
+                        required: 'Challan quantity is required',
+                        validate: (v) => {
+                          const n = Number(v);
+                          if (Number.isNaN(n)) return 'Must be a number';
+                          if (n <= 0) return 'Must be greater than 0';
+                          if (n < +quantity) return 'Challan quantity cannot be less than receive quantity';
+                          if (n > remainingQuantity) return 'Challan quantity cannot be greater than po quantity';
+                          return true;
+                        },
+                      }}
+                      render={({ field: { value, onChange, onBlur } }) => (
+                        <TextInput
+                          className="w-1/2 h-14 bg-[#F5F6FA] border border-t-0 border-black/25 text-[#5D80C5] text-xs xs:text-sm rounded-2xl px-4"
+                          placeholder="challan quantity"
+                          placeholderTextColor="#5D80C5"
+                          selectionColor="#5D80C5"
+                          keyboardType="numeric"
+                          value={value}
+                          onChangeText={onChange}
+                          onBlur={onBlur}
+                        />
+                      )}
                     />
                   </View>
+
+                  <View className="mt-1">
+                    <ErrorText msg={errors.quantity?.message} />
+                    <ErrorText msg={errors.challanQuantity?.message} />
+                  </View>
+
                   <View className="stock-vat flex-row items-center justify-between mt-2">
-                    <View className="sap-stock">
-                      {/* {isSapStockLoading ? (
-                        <View className="flex-row items-center gap-x-1 mt-1">
-                          <ActivityIndicator size="small" color={'#0964AF'} />
-                          <Text className="text-xs text-center text-[#0964AF] font-medium">
-                            SAP stock loading....
-                          </Text>
-                        </View>
-                      ) : (
-                        <View className="flex-row items-center gap-x-3">
-                          <Image className="w-10 h-10" source={SapImage} />
-                          <Text className="text-black text-sm font-bold">
-                            {sapStock}
-                          </Text>
-                        </View>
-                      )} */}
-                    </View>
+                    <View className="sap-stock">{/* (kept commented) */}</View>
+
                     <View className="vat">
                       <View className="flex-row items-center gap-x-3">
                         <Text className="text-black text-sm font-bold">
                           {taxRate && `${taxRate}%`}
-                          {itemVatAmount > 0 &&
-                            ` (${itemVatAmount.toFixed(2)})`}
+                          {itemVatAmount > 0 && ` (${itemVatAmount.toFixed(2)})`}
                         </Text>
                         <Image className="w-10 h-10" source={VatImage} />
                       </View>
@@ -145,14 +243,26 @@ const ArticleDetails = ({ navigation, route }) => {
                       </Text>
                     </View>
                     <View className="input-box mt-2">
-                      <TextInput
-                        className="bg-[#F5F6FA] border border-t-0 border-black/25 h-12 text-[#5D80C5] text-xs xs:text-sm rounded-2xl px-4"
-                        placeholder="Batch number"
-                        placeholderTextColor="#5D80C5"
-                        selectionColor="#5D80C5"
-                        value={batchNo.toString()}
-                        onChangeText={value => setBatchNo(value)}
+                      <Controller
+                        control={control}
+                        name="batchNo"
+                        rules={{
+                          required: 'Batch number is required',
+                          minLength: { value: 2, message: 'Too short' },
+                        }}
+                        render={({ field: { value, onChange, onBlur } }) => (
+                          <TextInput
+                            className="bg-[#F5F6FA] border border-t-0 border-black/25 h-12 text-[#5D80C5] text-xs xs:text-sm rounded-2xl px-4"
+                            placeholder="Batch number"
+                            placeholderTextColor="#5D80C5"
+                            selectionColor="#5D80C5"
+                            value={value}
+                            onChangeText={onChange}
+                            onBlur={onBlur}
+                          />
+                        )}
                       />
+                      <ErrorText msg={errors.batchNo?.message} />
                     </View>
                   </View>
 
@@ -165,48 +275,36 @@ const ArticleDetails = ({ navigation, route }) => {
                       </Text>
                     </View>
                     <View className="input-box mt-2">
-                      <TextInput
-                        className="bg-[#F5F6FA] border border-t-0 border-black/25 h-12 text-[#5D80C5] text-xs xs:text-sm rounded-2xl px-4"
-                        placeholder="Enter MRP"
-                        placeholderTextColor="#5D80C5"
-                        selectionColor="#5D80C5"
-                        keyboardType="numeric"
-                        value={mrp.toString()}
-                        onChangeText={value => setMrp(value)}
+                      <Controller
+                        control={control}
+                        name="mrp"
+                        rules={{
+                          validate: (v) => {
+                            if (!v) return true; // optional
+                            const n = Number(v);
+                            if (Number.isNaN(n)) return 'Must be a number';
+                            if (n < 0) return 'Cannot be negative';
+                            return true;
+                          },
+                        }}
+                        render={({ field: { value, onChange, onBlur } }) => (
+                          <TextInput
+                            className="bg-[#F5F6FA] border border-t-0 border-black/25 h-12 text-[#5D80C5] text-xs xs:text-sm rounded-2xl px-4"
+                            placeholder="Enter MRP"
+                            placeholderTextColor="#5D80C5"
+                            selectionColor="#5D80C5"
+                            keyboardType="numeric"
+                            value={value}
+                            onChangeText={onChange}
+                            onBlur={onBlur}
+                          />
+                        )}
                       />
+                      <ErrorText msg={errors.mrp?.message} />
                     </View>
-                    {/* {!regex.test(site.toLowerCase()) && (
-                      <>
-                        {isLoading && priceInfo?.length === 0 && (
-                          <View className="flex-row items-center gap-x-1 mt-1">
-                            <ActivityIndicator size="small" color={'#f87171'} />
-                            <Text className="text-xs text-center text-red-400 font-medium">
-                              price loading....
-                            </Text>
-                          </View>
-                        )}
-
-                        {!isLoading && priceInfo?.length > 0 && (
-                          <View className="mrp-info flex-row items-center mt-1">
-                            <FlatList
-                              data={priceInfo}
-                              renderItem={renderItem}
-                              keyExtractor={(_, index) => String(index)}
-                              horizontal={true}
-                            />
-                          </View>
-                        )}
-                        {!isLoading && priceInfo?.length === 0 && (
-                          <View className="mt-1">
-                            <Text className="text-xs text-center text-red-400 font-medium">
-                              price not found!
-                            </Text>
-                          </View>
-                        )}
-                      </>
-                    )} */}
                   </View>
                 </View>
+
                 <View className="w-full mfg-exp-date flex-row mt-3 mb-3">
                   {/* Product Manufacturing Date */}
                   <View className="w-1/2 mfg-date bg-[#FEFBFB] border border-[#F2EFEF] rounded px-3 py-2 mr-0.5">
@@ -217,26 +315,34 @@ const ArticleDetails = ({ navigation, route }) => {
                           MFG Date
                         </Text>
                       </View>
-                      {mfgDate?.date && mfgDate?.text?.length === 8 && (
+                      {mfgText && mfgText.length === 8 && (
                         <Text className="text-xs xs:text-sm text-[#2E2C3B] font-medium capitalize">
-                          {mfgDate?.date?.toLocaleDateString('en-Uk', {
-                            dateStyle: 'medium',
-                          })}
+                          {getDate(mfgText).toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
                         </Text>
                       )}
                     </View>
                     <View className="date-picker mt-2">
-                      <TextInput
-                        className="bg-[#F5F6FA] border border-t-0 border-black/25 h-12 text-[#5D80C5] text-xs xs:text-sm rounded-2xl px-4"
-                        placeholder="DD/MM/YY"
-                        placeholderTextColor="#5D80C5"
-                        value={mfgDate?.text}
-                        onChangeText={text =>
-                          setMfgDate(handleDate(text, 'mfg'))
-                        }
-                        keyboardType="numeric"
-                        maxLength={10}
+                      <Controller
+                        control={control}
+                        name="mfgDate"
+                        rules={{
+                          required: 'MFG date is required',
+                          validate: (value) => validateDate(value, 'mfg'),
+                        }}
+                        render={({ field: { value, onChange, onBlur } }) => (
+                          <TextInput
+                            className="bg-[#F5F6FA] border border-t-0 border-black/25 h-12 text-[#5D80C5] text-xs xs:text-sm rounded-2xl px-4"
+                            placeholder="DD/MM/YY"
+                            placeholderTextColor="#5D80C5"
+                            value={value}
+                            onChangeText={text => onChange(formatDateText(text))}
+                            onBlur={onBlur}
+                            keyboardType="numeric"
+                            maxLength={10}
+                          />
+                        )}
                       />
+                      <ErrorText msg={errors.mfgDate?.message} />
                     </View>
                   </View>
 
@@ -249,26 +355,34 @@ const ArticleDetails = ({ navigation, route }) => {
                           exp date
                         </Text>
                       </View>
-                      {expDate?.date && expDate?.text?.length === 8 && (
+                      {expText && expText.length === 8 && (
                         <Text className="text-xs xs:text-sm text-[#2E2C3B] font-medium capitalize">
-                          {expDate?.date?.toLocaleDateString('en-Uk', {
-                            dateStyle: 'medium',
-                          })}
+                          {getDate(expText).toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
                         </Text>
                       )}
                     </View>
                     <View className="date-picker mt-2">
-                      <TextInput
-                        className="bg-[#F5F6FA] border border-t-0 border-black/25 h-12 text-[#5D80C5] text-xs xs:text-sm rounded-2xl px-4"
-                        placeholder="DD/MM/YY"
-                        placeholderTextColor="#5D80C5"
-                        value={expDate?.text}
-                        onChangeText={text =>
-                          setExpDate(handleDate(text, 'exp'))
-                        }
-                        keyboardType="numeric"
-                        maxLength={10}
+                      <Controller
+                        control={control}
+                        name="expDate"
+                        rules={{
+                          required: 'Expiry date is required',
+                          validate: (value) => validateDate(value, 'exp')
+                        }}
+                        render={({ field: { value, onChange, onBlur } }) => (
+                          <TextInput
+                            className="bg-[#F5F6FA] border border-t-0 border-black/25 h-12 text-[#5D80C5] text-xs xs:text-sm rounded-2xl px-4"
+                            placeholder="DD/MM/YY"
+                            placeholderTextColor="#5D80C5"
+                            value={value}
+                            onChangeText={text => onChange(formatDateText(text))}
+                            onBlur={onBlur}
+                            keyboardType="numeric"
+                            maxLength={10}
+                          />
+                        )}
                       />
+                      <ErrorText msg={errors.expDate?.message} />
                     </View>
                   </View>
                 </View>
@@ -278,15 +392,6 @@ const ArticleDetails = ({ navigation, route }) => {
                     <Text className="text-xs xs:text-sm text-[#2E2C3B] text-center font-medium capitalize mb-2">
                       shelf life
                     </Text>
-                    {/* <CircularProgress
-                      progress={shelfLife}
-                      variant={
-                        (!isLocal && shelfLife >= 50) ||
-                          (isLocal && shelfLife >= 75)
-                          ? 'success'
-                          : 'danger'
-                      }
-                    /> */}
                     <CircularProgress
                       progress={shelfLife}
                       variant={shelfLife >= 75 ? 'success' : 'danger'}
@@ -294,12 +399,14 @@ const ArticleDetails = ({ navigation, route }) => {
                   </View>
                 )}
               </View>
-              <View className="button">
+
+              <View className="button mb-6">
                 <Button
-                  text={isButtonLoading ? 'Receiving item' : 'Mark as Received'}
+                  text={isButtonLoading || isSubmitting ? 'Receiving item' : 'Mark as Received'}
                   variant="brand"
-                  loading={isButtonLoading}
-                  onPress={() => null}
+                  loading={isButtonLoading || isSubmitting}
+                  onPress={handleSubmit(onSubmit)}
+                  disabled={!isValid || isButtonLoading || isSubmitting}
                 />
               </View>
             </View>
@@ -307,7 +414,7 @@ const ArticleDetails = ({ navigation, route }) => {
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
-  )
-}
+  );
+};
 
 export default ArticleDetails;

@@ -18,21 +18,20 @@ const Receiving = ({ navigation, route }) => {
   const poRegex = /^[1-467][0-9]{9}$/;
   const dnRegex = /^12[0-9]{7}$/;
 
-
   // Custom hook to navigate screen
   useBackHandler('Home');
 
   useLayoutEffect(() => {
-    let screenOptions = {};
-    if (user.active_site) {
-      const regex = /^(dk|ds)/i;
-      screenOptions.headerTitle = regex.test(user?.active_site.toLowerCase())
-        ? `${user?.active_site.toLowerCase().slice(0, 2) === 'dk' ? 'DC' : 'DS'
-        } Receiving`
-        : 'Outlet Receiving';
-    }
-    navigation.setOptions(screenOptions);
-  }, [navigation, user.active_site]);
+    if (!user?.active_site) return;
+
+    const regex = /^(dk|ds)/i;
+    const site = user.active_site.toLowerCase();
+    const isDC = regex.test(site) && site.startsWith('dk');
+    const isDS = regex.test(site) && site.startsWith('ds');
+    const title = `${isDC ? 'DC' : isDS ? 'DS' : 'Outlet'} Receiving`;
+
+    navigation.setOptions({ headerTitle: title });
+  }, [navigation, user?.active_site]);
 
   const checkDocument = async (document, type) => {
 
