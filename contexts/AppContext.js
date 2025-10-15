@@ -1,11 +1,11 @@
 import { createContext } from 'react';
-import { useAuth, useDevice } from '../hooks';
+import { useAuth, useChallan, useDevice } from '../hooks';
 
 export const AppContext = createContext({});
 
 const AppProvider = ({ children }) => {
   const authInfo = useAuth();
-  // const challanInfo = useChallanInfo();
+  const challanInfo = useChallan();
   // const createdInfo = useCreatedDocument();
   const deviceInfo = useDevice();
   // const manualInfo = useManual();
@@ -13,7 +13,7 @@ const AppProvider = ({ children }) => {
   // const pickingInfo = useDnPicking();
   const contextValues = {
     authInfo,
-    // challanInfo,
+    challanInfo,
     // createdInfo,
     deviceInfo,
     // manualInfo,

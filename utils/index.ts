@@ -169,3 +169,14 @@ export const getDate = (text: string) => {
   const date = new Date(year + 2000, month - 1, day);
   return date;
 };
+
+export const formatIsoDate = (value: string) => {
+  if (value) {
+    let date = new Date(value);
+    let splitted = date.toLocaleDateString('en-GB').split('/');
+    splitted[2] = (+splitted[2] - 2000).toString();
+    const text = splitted.join('/');
+    return text;
+  };
+  return '';
+};

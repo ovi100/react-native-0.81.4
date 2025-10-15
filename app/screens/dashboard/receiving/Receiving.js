@@ -133,7 +133,7 @@ const Receiving = ({ navigation, route }) => {
             value={search}
           />
         </View>
-        <View className="content h-4/5 justify-center">
+        <View className="content h-3/5 justify-center">
           {isChecking ? (
             <View className="bg-white">
               <ActivityIndicator size="large" color="#EB4B50" />

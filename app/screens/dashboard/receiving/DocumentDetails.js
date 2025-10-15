@@ -1,18 +1,30 @@
 import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
-import { FalseHeader, Ribbon } from '../../../../components';
+import { Button, FalseHeader, Ribbon } from '../../../../components';
 import { useAppContext, useBackHandler } from '../../../../hooks';
 import { FlatListStyle, serverMessage, toast } from '../../../../utils';
 import { getStorage } from '../../../../utils/storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { API_URL } from '../../../../app-config';
+import { EmptyBox } from '../../../../components/animations';
+import ChallanForm from './ChallanForm';
 
 const DocumentDetails = ({ navigation, route }) => {
   const { screen, po, dn, childPack } = route.params;
-  const { authInfo } = useAppContext();
+  const { authInfo, challanInfo } = useAppContext();
   const { user } = authInfo;
+  const {
+    setChallanModal,
+    challans,
+    setChallans,
+    setGrnModal,
+    enableGrnReview,
+    setEnableGrnReview,
+  } = challanInfo;
   const [isLoading, setIsLoading] = useState(false);
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [articles, setArticles] = useState([]);
+  const [grnItems, setGrnItems] = useState([]);
   // const [documentDetails, setDocumentDetails] = useState(null);
   const [pressMode, setPressMode] = useState(false);
   const DOC_TYPE = po ? "po" : dn ? "dn" : childPack ? "child" : null;
@@ -83,13 +95,13 @@ const DocumentDetails = ({ navigation, route }) => {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
-        Accept: "application/json",
         "Content-Type": "application/json",
       },
       signal
     });
 
     const json = await response.json();
+    // console.log(json);
 
     if (!response.ok || !json?.success) {
       throw new Error(serverMessage(json?.message || response.statusText));
@@ -110,8 +122,10 @@ const DocumentDetails = ({ navigation, route }) => {
           if (ignore) return;
 
           const items = data?.itemList ?? [];
-
-          setArticles(items);
+          const grnList = items.filter(item => item.currentReceivedQuantity > 0);
+          setGrnItems(grnList);
+          const filteredList = items.filter(item => item.quantity !== item.totalReceivedQuantity);
+          setArticles(filteredList);
         } catch (err) {
           if (!ignore && err?.name !== "AbortError") {
             toast(serverMessage(err.message));
@@ -149,9 +163,10 @@ const DocumentDetails = ({ navigation, route }) => {
     const Wrapper = isPressMood ? TouchableOpacity : View;
 
     const getRemainingQuantity = () => {
-      const remQty = item.grnQuantity >= item.totalReceivedQuantity
-        ? item.quantity - item.grnQuantity
-        : item.quantity - item.totalReceivedQuantity;
+      const remQty = (item.grnQuantity + item.totalReceivedQuantity) >= item.grnQuantity ?
+        item.quantity - (item.grnQuantity + item.totalReceivedQuantity) :
+        item.grnQuantity >= item.totalReceivedQuantity ? item.quantity - item.grnQuantity
+          : item.quantity - item.totalReceivedQuantity;
       return remQty;
     };
 
@@ -161,7 +176,8 @@ const DocumentDetails = ({ navigation, route }) => {
       po,
       dn,
       childPack,
-      site: user.active_site
+      site: user.active_site,
+      token: user.token
     }
     return (
       <Wrapper
@@ -210,6 +226,46 @@ const DocumentDetails = ({ navigation, route }) => {
     );
   };
 
+  let grnSummery = {};
+
+  // GRN Summery
+  if (grnItems.length > 0) {
+    grnSummery = grnItems.reduce(
+      (acc, curr, i) => {
+        acc.totalItems = i + 1;
+        acc.totalPrice += curr.quantity * curr.unitPrice;
+        acc.totalVatAmount += curr.unitVat;
+        acc.totalNetAmount += curr.quantity * curr.netPrice;
+        return acc;
+      },
+      { totalItems: 0, totalPrice: 0, totalVatAmount: 0, totalNetAmount: 0 },
+    );
+  };
+
+  const totalChallanAmount = () => {
+    let amount = 0;
+    if (challans.length > 0) {
+      amount = challans.reduce((total, item) => {
+        const a = parseFloat(item.vatAmount);
+        return total + (isNaN(a) ? 0 : a);
+      }, 0);
+    };
+    return amount;
+  };
+
+  const totalVatAmount = totalChallanAmount();
+  const totalVatAmountPercent = grnSummery?.totalVatAmount * (2 / 100);
+  const minGrnVatAmount = grnSummery?.totalVatAmount - totalVatAmountPercent;
+  const maxGrnVatAmount = grnSummery?.totalVatAmount + totalVatAmountPercent;
+  const isValidVatAmount = totalVatAmount >= minGrnVatAmount;
+
+  const hasGrnItems = grnItems.length > 0;
+  // const hasVendorDetails =
+  //   (vendorDetails && signMode) || !signMode || signMode === null;
+  const isEmptyVatAmount = grnSummery?.totalVatAmount === 0;
+
+  const enableGrnButton = (hasGrnItems && isValidVatAmount) || isEmptyVatAmount;
+
   return (
     <>
       {isLoading && (
@@ -220,13 +276,20 @@ const DocumentDetails = ({ navigation, route }) => {
           </Text>
         </View>
       )}
+      {!isLoading && !articles.length && (
+        <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-950">
+          <EmptyBox />
+          <Text className="mt-4 text-gray-400 text-base text-center">
+            No article is found!
+          </Text>
+        </View>
+      )}
       {!isLoading && articles.length > 0 && (
-        <View className="flex-1 bg-white dark:bg-neutral-950 p-3">
+        <View className="flex-1 bg-white dark:bg-neutral-950">
           <View className="flex-1 h-full px-2 sm:px-4">
             <FalseHeader />
             <View className="content flex-1 justify-between pb-2">
-              <View
-                className={`table h-full`}>
+              <View className={`table ${hasGrnItems ? 'h-[85%] xs:h-[88%]' : 'h-full'}`}>
                 <View className="table-header flex-row bg-th text-center p-2">
                   {tableHeader.map(th => renderTableHeader(th))}
                 </View>
@@ -247,42 +310,42 @@ const DocumentDetails = ({ navigation, route }) => {
                 />
               </View>
 
-              {/* {po && hasGrnItems && (
-            <View className="button">
-              {!enableGrnReview && (
-                <Button
-                  text={challans.length > 0 ? 'Edit Challan' : 'Add Challan'}
-                  size={width > 460 ? 'large' : 'medium'}
-                  variant="brand"
-                  onPress={() => setChallanModal(true)}
-                />
+              {po && hasGrnItems && (
+                <View className="button">
+                  {!enableGrnReview && (
+                    <Button
+                      text={challans.length > 0 ? 'Edit Challan' : 'Add Challan'}
+                      variant="brand"
+                      onPress={() => setChallanModal(true)}
+                    />
+                  )}
+                  {enableGrnReview && (
+                    <Button
+                      text={isButtonLoading ? 'Sending GRN' : 'Review GRN'}
+                      variant="brand"
+                      loading={isButtonLoading}
+                      onPress={() => setGrnModal(true)}
+                    />
+                  )}
+                </View>
               )}
-              {enableGrnReview && (
-                <Button
-                  text={isButtonLoading ? 'Sending GRN' : 'Review GRN'}
-                  size={width > 460 ? 'large' : 'medium'}
-                  variant="brand"
-                  loading={isButtonLoading}
-                  onPress={() => setGrnModal(true)}
-                />
+              {dn && articles.length === 0 && hasGrnItems && (
+                <View className="button">
+                  <Button
+                    text={isButtonLoading ? '' : 'Review GRN'}
+                    variant="brand"
+                    loading={isButtonLoading}
+                    onPress={() => setGrnModal(true)}
+                  />
+                </View>
               )}
-            </View>
-          )}
-
-          {dn && articles.length === 0 && hasGrnItems && (
-            <View className="button">
-              <Button
-                text={isButtonLoading ? '' : 'Review GRN'}
-                size={width > 460 ? 'large' : 'medium'}
-                variant="brand"
-                loading={isButtonLoading}
-                onPress={() => setGrnModal(true)}
-              />
-            </View>
-          )} */}
               {/* <CameraScan /> */}
             </View>
           </View>
+          {/* Challan Modal */}
+          {po && (
+            <ChallanForm po={po} isEmptyVatAmount={isEmptyVatAmount} />
+          )}
         </View>
       )}
     </>
