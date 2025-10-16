@@ -81,6 +81,13 @@ const Home = ({ navigation, route }) => {
       types: ['dc', 'outlet', 'darkstore'],
     },
     {
+      name: 'Approvals',
+      icon: AdHocMenuImage,
+      screen: 'ApprovalsRoot',
+      permission: 'Approvals',
+      types: ['dc', 'outlet', 'darkstore'],
+    },
+    {
       name: 'Shelving',
       icon: ShelvingMenuImage,
       screen: 'Shelving',

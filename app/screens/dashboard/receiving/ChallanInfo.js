@@ -14,30 +14,30 @@ const ChallanInfo = ({ title, route }) => {
       className="flex-row items-center justify-between border border-tb mt-2 px-3 py-1.5 rounded"
       key={index}>
       <View className="flex-row items-center">
-        <Image source={{ uri: item.image }} className="w-10 h-10 rounded" />
+        <Image source={{ uri: item.challanImageUrl }} className="w-10 h-10 rounded" />
         <View className="ml-2">
-          <Text className="text-sm text-slate-700">{item.challanNum}</Text>
+          <Text className="text-sm text-slate-700">{item.challanNumber}</Text>
           <Text className="text-sm text-slate-700">
-            {item.challanDate.text}
+            {new Date(item.challanDate).toLocaleDateString('en-Uk', { dateStyle: 'medium' })}
           </Text>
         </View>
       </View>
       <Text className="text-sm text-slate-700 text-center flex-1 justify-center flex-wrap">
-        {Number(item.vatAmount).toLocaleString()}
+        {Number(item.totalVatAmount).toLocaleString()}
       </Text>
       <View className="flex-row items-center justify-end">
         <TouchableOpacity onPress={() => editChallan(index, route)}>
           <SquarePen size={20} color="#3b82f6" />
         </TouchableOpacity>
         <TouchableOpacity className="ml-3" onPress={() => deleteChallan(index)}>
-          <Trash size={5} color="#ef4444" />
+          <Trash size={20} color="#ef4444" />
         </TouchableOpacity>
       </View>
     </View>
   );
 
   const totalVatAmount = challans.reduce((total, item) => {
-    const amount = parseFloat(item.vatAmount);
+    const amount = parseFloat(item.totalVatAmount);
     return total + (isNaN(amount) ? 0 : amount);
   }, 0);
 
@@ -68,7 +68,7 @@ const ChallanInfo = ({ title, route }) => {
             <TouchableOpacity
               className="bg-green-600 flex-row items-center justify-center gap-x-1 rounded px-2 py-1.5"
               onPress={() => setChallanModal(true)}>
-              <CirclePlus size={5} color="#fff" />
+              <CirclePlus size={20} color="#fff" />
               <Text className="text-white text-xs text-center font-medium capitalize">
                 add another
               </Text>

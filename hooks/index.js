@@ -9,7 +9,7 @@ import useChallan from './useChallan';
 // import useCreatedDocument from './useCreatedDocument';
 import useDevice from './useDevice';
 // import useDnPicking from './useDnPicking';
-// import useImagePicker from './useImagePicker';
+import useImagePicker from './useImagePicker';
 // import useManual from './useManual';
 // import useMetaData from './useMetaData';
 // import useResetStates from './useResetStates';
@@ -27,7 +27,7 @@ export {
   // useCreatedDocument,
   useDevice,
   // useDnPicking,
-  // useImagePicker,
+  useImagePicker,
   // useManual,
   // useMetaData,
   // useResetStates,

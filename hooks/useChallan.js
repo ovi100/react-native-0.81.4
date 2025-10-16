@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from '../utils';
-import useImagePicker from './useImagePicker';
 import { uploadFile } from '../server';
 import { API_URL } from '../app-config';
+import useImagePicker from './useImagePicker';
 
 const defaultChallan = {
   challanNum: '',
@@ -48,8 +48,8 @@ const useChallan = () => {
       path: path,
       onProgress: setIsUploading,
       onSuccess: result => {
-        if (result.status) {
-          url = result.url;
+        if (result.success) {
+          url = result.data.url;
         } else {
           toast(result.message);
         }
@@ -81,7 +81,6 @@ const useChallan = () => {
   const resetChallan = () => {
     reset(defaultChallan);
     setIsEditingIndex(null);
-    setImage(null);
   };
 
   const handleSkip = () => {
@@ -171,7 +170,7 @@ const useChallan = () => {
     reTakePhoto,
     removePhoto,
     image,
-    setImage,
+    setImage
   };
 
   return challanInfo;

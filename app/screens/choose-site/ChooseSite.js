@@ -23,8 +23,6 @@ const ChooseSite = ({ navigation, route }) => {
   let sites = useMemo(() => user?.sites ?? [], [user]);
   const hasActiveSite = Boolean(user && user.active_site);
 
-  console.log(route.params)
-
   useLayoutEffect(() => {
     let screenOptions = {};
     if (user.sites.length > 0) {

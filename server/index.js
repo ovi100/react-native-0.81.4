@@ -61,23 +61,22 @@ export const uploadFile = async options => {
   const { uploadUrl, file, path, onProgress, onSuccess, onError } = options;
 
   const formData = new FormData();
-  formData.append('file', {
+  formData.append('image', {
     uri: file.uri,
     name: file.fileName,
     type: file.type,
   });
-  formData.append('path', `${APP_STAGE}/${path}`);
-  // formData.append('bucket', bucket);
+  formData.append('path', `${APP_STAGE}/${path}`.toLowerCase());
 
   try {
     if (onProgress) onProgress(true);
 
     const response = await fetch(uploadUrl, {
       method: 'POST',
-      body: formData,
       headers: {
-        Accept: 'application/json',
+        'Content-Type': 'multipart/form-data',
       },
+      body: formData,
     });
 
     if (!response.ok) {

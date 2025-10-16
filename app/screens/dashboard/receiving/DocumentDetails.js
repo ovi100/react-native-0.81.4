@@ -8,6 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { API_URL } from '../../../../app-config';
 import { EmptyBox } from '../../../../components/animations';
 import ChallanForm from './ChallanForm';
+import GrnReview from './GrnReview';
 
 const DocumentDetails = ({ navigation, route }) => {
   const { screen, po, dn, childPack } = route.params;
@@ -19,7 +20,7 @@ const DocumentDetails = ({ navigation, route }) => {
     setChallans,
     setGrnModal,
     enableGrnReview,
-    setEnableGrnReview,
+    setEnableGrnReview
   } = challanInfo;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
@@ -246,7 +247,7 @@ const DocumentDetails = ({ navigation, route }) => {
     let amount = 0;
     if (challans.length > 0) {
       amount = challans.reduce((total, item) => {
-        const a = parseFloat(item.vatAmount);
+        const a = parseFloat(item.totalVatAmount);
         return total + (isNaN(a) ? 0 : a);
       }, 0);
     };
@@ -254,9 +255,9 @@ const DocumentDetails = ({ navigation, route }) => {
   };
 
   const totalVatAmount = totalChallanAmount();
-  const totalVatAmountPercent = grnSummery?.totalVatAmount * (2 / 100);
-  const minGrnVatAmount = grnSummery?.totalVatAmount - totalVatAmountPercent;
-  const maxGrnVatAmount = grnSummery?.totalVatAmount + totalVatAmountPercent;
+  const vatMarginAmount = grnSummery?.totalVatAmount * (2 / 100);
+  const minGrnVatAmount = grnSummery?.totalVatAmount - vatMarginAmount;
+  // const maxGrnVatAmount = grnSummery?.totalVatAmount + vatMarginAmount;
   const isValidVatAmount = totalVatAmount >= minGrnVatAmount;
 
   const hasGrnItems = grnItems.length > 0;
@@ -265,6 +266,57 @@ const DocumentDetails = ({ navigation, route }) => {
   const isEmptyVatAmount = grnSummery?.totalVatAmount === 0;
 
   const enableGrnButton = (hasGrnItems && isValidVatAmount) || isEmptyVatAmount;
+  console.log('challan', challans);
+
+  const sendToGrn = async (data) => {
+    try {
+      setIsButtonLoading(true);
+
+      const postData = {
+        poNumber: po,
+        site: user.active_site,
+        challans: challans.map(challan => {
+          return {
+            ...challan,
+            totalVatAmount: +challan.totalVatAmount,
+            totalCalculatedVatAmount: grnSummery?.totalVatAmount
+          }
+        }),
+      };
+
+      // console.log(postData)
+
+      await fetch(API_URL + 'api/po/create-pending-for-grn', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData),
+      })
+        .then(response => response.json())
+        .then(result => {
+          if (result.success) {
+            setChallans([]);
+            setEnableGrnReview(false);
+            setGrnModal(false);
+            navigation.replace(screen);
+          } else {
+            toast(result.message);
+          }
+        })
+        .catch(({ message }) => {
+          const msg = message.includes('JSON Parse error')
+            ? 'Server is down'
+            : message;
+          toast(msg);
+        });
+    } catch (e) {
+      toast(e);
+    } finally {
+      setIsButtonLoading(false);
+    }
+  };
 
   return (
     <>
@@ -343,9 +395,22 @@ const DocumentDetails = ({ navigation, route }) => {
             </View>
           </View>
           {/* Challan Modal */}
-          {po && (
-            <ChallanForm po={po} isEmptyVatAmount={isEmptyVatAmount} />
-          )}
+          <ChallanForm po={po} isEmptyVatAmount={isEmptyVatAmount} />
+
+          {/* GRN Review Modal */}
+          <GrnReview
+            grnItems={grnItems}
+            grnInfo={grnSummery}
+            enableGrnButton={enableGrnButton}
+            documentInfo={{ po, dn }}
+            totalItems={articles.length}
+            minGrnVatAmount={minGrnVatAmount}
+            visibleDnGrnButton={dn && hasGrnItems && articles.length === 0}
+            sendToGrn={sendToGrn}
+          // checkGrn={checkStorageLocation}
+          // openVendorForm={setBottomModalVisible}
+          // onRefresh={onRefresh}
+          />
         </View>
       )}
     </>
