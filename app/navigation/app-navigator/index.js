@@ -4,6 +4,7 @@ import ChooseSite from '../../screens/choose-site/ChooseSite';
 import ProfileNavigator from './ProfileNavigator';
 import Home from '../../screens/dashboard/Home';
 import ReceivingNavigator from './ReceivingNavigator';
+import ApprovalNavigator from './AppovalNavigator';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -32,6 +33,13 @@ const AppNavigator = () => {
       <Stack.Screen
         name="ReceivingRoot"
         component={ReceivingNavigator}
+        options={{
+          headerShown: false
+        }}
+      />
+      <Stack.Screen
+        name="ApprovalRoot"
+        component={ApprovalNavigator}
         options={{
           headerShown: false
         }}

@@ -1,17 +1,16 @@
 import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
-import { Button, FalseHeader, Ribbon } from '../../../../components';
+import { View, Text, FlatList, ActivityIndicator, TextInput } from 'react-native';
+import { Button, FalseHeader } from '../../../../components';
 import { useAppContext, useBackHandler } from '../../../../hooks';
 import { FlatListStyle, serverMessage, toast } from '../../../../utils';
-import { getStorage } from '../../../../utils/storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { API_URL } from '../../../../app-config';
 import { EmptyBox } from '../../../../components/animations';
-import ChallanForm from './ChallanForm';
-import GrnReview from './GrnReview';
+import ChallanForm from '../../common/ChallanForm';
+import GrnReview from '../../common/GrnReview';
 
 const DocumentDetails = ({ navigation, route }) => {
-  const { screen, po, dn, childPack } = route.params;
+  const { screen, poNumber, dnNumber, } = route.params;
   const { authInfo, challanInfo } = useAppContext();
   const { user } = authInfo;
   const {
@@ -20,17 +19,14 @@ const DocumentDetails = ({ navigation, route }) => {
     setChallans,
     setGrnModal,
     enableGrnReview,
-    setEnableGrnReview
+    // setEnableGrnReview
   } = challanInfo;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [articles, setArticles] = useState([]);
-  const [grnItems, setGrnItems] = useState([]);
-  // const [documentDetails, setDocumentDetails] = useState(null);
-  const [pressMode, setPressMode] = useState(false);
-  const DOC_TYPE = po ? "po" : dn ? "dn" : childPack ? "child" : null;
-  const tableHeader = po
-    ? ['Article Info', 'PO Qty', 'GRN Qty', 'REM Qty']
+  const DOC_TYPE = poNumber ? "po" : "dn";
+  const tableHeader = poNumber
+    ? ['Article Info', 'PO Qty', 'RCV Qty']
     : ['Article Info', 'Quantity', 'Action'];
 
   // Custom hook to navigate screen
@@ -39,29 +35,23 @@ const DocumentDetails = ({ navigation, route }) => {
   const customHeader = useMemo(
     () => (
       <View className="text px-1 xs:px-2">
-        {po && (
+        {poNumber && (
           <Text className="text-sm xs:text-base text-sh text-center font-medium">
-            {`PO ${po} Details`}
+            {`PO ${poNumber} Details`}
           </Text>
         )}
-        {dn && (
-          <>
-            {childPack && (
-              <Text className="text-sm xs:text-base text-sh text-center font-medium">
-                {`Pack ${childPack} Details`}
-              </Text>
-            )}
-            <Text
-              className={`${childPack ? 'text-xs' : 'text-sm xs:text-base'
-                }  text-sh text-center font-medium`}>
-              {`DN ${dn} Details`}
-            </Text>
-          </>
+        {dnNumber && (
+
+          <Text
+            className="text-sm xs:text-base text-sh text-center font-medium">
+            {`DN ${dnNumber} Details`}
+          </Text>
+
         )}
 
       </View>
     ),
-    [childPack, dn, po]
+    [dnNumber, poNumber]
   );
 
   useLayoutEffect(() => {
@@ -70,25 +60,10 @@ const DocumentDetails = ({ navigation, route }) => {
 
   const endpoint = useMemo(() => {
     if (!DOC_TYPE) return null;
-    if (DOC_TYPE === "po") return `${API_URL}api/po/receiving-list/${po}`;
-    if (DOC_TYPE === "dn") return `${API_URL}api/dn/receiving-list/${dn}`;
-    if (DOC_TYPE === "child") return `${API_URL}api/child-pack/receiving-list/${childPack}`;
+    if (DOC_TYPE === "po") return `${API_URL}api/po/receiving-list/${poNumber}`;
+    if (DOC_TYPE === "dn") return `${API_URL}api/dn/receiving-list/${dnNumber}`;
     return null;
-  }, [DOC_TYPE, childPack, dn, po]);
-
-  useFocusEffect(
-    useCallback(() => {
-      const getAsyncStorage = async () => {
-        const [press] =
-          await Promise.all([
-            getStorage('pressMode'),
-          ]);
-        setPressMode(press);
-
-      };
-      getAsyncStorage();
-    }, [])
-  );
+  }, [DOC_TYPE, dnNumber, poNumber]);
 
   // Fetching document details
   const fetchData = async (url, token, signal) => {
@@ -123,10 +98,17 @@ const DocumentDetails = ({ navigation, route }) => {
           if (ignore) return;
 
           const items = data?.itemList ?? [];
-          const grnList = items.filter(item => item.currentReceivedQuantity > 0);
-          setGrnItems(grnList);
-          const filteredList = items.filter(item => item.quantity !== item.totalReceivedQuantity);
-          setArticles(filteredList);
+          const challanList = data?.challans ?? [];
+          const filteredList = items.filter(item => item.pendingGrnQuantity > 0);
+          const newList = filteredList.map(item => {
+            return {
+              ...item,
+              inputQuantity: item.pendingGrnQuantity,
+              selected: false,
+            }
+          })
+          setArticles(newList);
+          setChallans(challanList);
         } catch (err) {
           if (!ignore && err?.name !== "AbortError") {
             toast(serverMessage(err.message));
@@ -140,92 +122,79 @@ const DocumentDetails = ({ navigation, route }) => {
         ignore = true;
         ac.abort();
       };
-    }, [endpoint, user.token])
+    }, [endpoint, setChallans, user.token])
   );
 
   const renderTableHeader = item => {
-    const poStyles = `${item === 'Article Info' ? 'w-2/5' : 'w-1/5'}`;
+    const poStyles = `${item === 'Article Info' ? 'w-1/2' : 'w-1/4'}`;
     const dnStyles = `${item === 'Action' ? 'w-1/4 xs:w-1/5' : 'w-[37.5%] xs:w-2/5'}`;
 
     return (
       <Text
-        className={`${po ? poStyles : dnStyles} text-white text-xs xs:text-sm text-center font-bold`}
+        className={`${poNumber ? poStyles : dnStyles} text-white text-xs xs:text-sm text-center font-bold`}
         key={item}>
         {item}
       </Text>
     );
   };
 
-  const renderPoItem = ({ item }) => {
-    // const isLocal = Boolean(!importedList.includes(Number(item.material)));
-    // const isLowItem = lowSaleGpList.includes(item.material);
-    const notSameSite = item.plant !== user.active_site;
-    const isPressMood = pressMode || item.isItemPressable;
-    const Wrapper = isPressMood ? TouchableOpacity : View;
+  const handleInputChange = (item, quantity) => {
+    console.log(+quantity, +item.pendingGrnQuantity)
 
-    const getRemainingQuantity = () => {
-      const remQty = (item.grnQuantity + item.totalReceivedQuantity) >= item.grnQuantity ?
-        item.quantity - (item.grnQuantity + item.totalReceivedQuantity) :
-        item.grnQuantity >= item.totalReceivedQuantity ? item.quantity - item.grnQuantity
-          : item.quantity - item.totalReceivedQuantity;
-      return remQty;
-    };
-
-    const params = {
-      ...item,
-      remainingQuantity: getRemainingQuantity(),
-      po,
-      dn,
-      childPack,
-      site: user.active_site,
-      token: user.token
+    if (+quantity > +item.pendingGrnQuantity) {
+      toast('Quantity exceed');
+      return;
     }
-    return (
-      <Wrapper
-        key={item.poItem}
-        onPress={() =>
-          notSameSite
-            ? toast(`Article ${item.material} is not for ${user.active_site}`)
-            : navigation.replace('ArticleDetails', params)
-        }
-        className={`relative overflow-hidden flex-row items-center border 
-          ${notSameSite ? 'border-red-500' : 'border-tb'} rounded-lg mt-2.5 px-3 py-2`}>
-        <View className="w-2/5">
-          <View className="flex-row items-center gap-x-1 mb-1">
-            <Text className="text-black text-xs xs:text-sm" numberOfLines={1}>
-              ({Number(item.poItem) / 10}) {item.material}
-            </Text>
-            {item.plant !== user.active_site && (
-              <Text
-                className="text-red-500 text-xs xs:text-sm font-medium"
-                numberOfLines={1}>
-                ({item.plant})
-              </Text>
-            )}
-          </View>
-          <Text className="w-full text-black text-xs">{item.description}</Text>
-        </View>
-        <Text
-          className="w-1/5 text-black text-xs xs:text-sm text-center"
-          numberOfLines={1}>
-          {item.quantity}
-        </Text>
-        <Text
-          className="w-1/5 text-black text-xs xs:text-sm text-center"
-          numberOfLines={1}>
-          {item.grnQuantity}
-        </Text>
-        <Text
-          className="w-1/5 text-blue-600 text-sm xs:text-base text-center"
-          numberOfLines={1}>
-          {getRemainingQuantity()}
-        </Text>
 
-        {item.isItemPressable && <Ribbon label="Loose" />}
-        {/* {isLowItem && <Ribbon label="Low GP" />} */}
-      </Wrapper>
+    setArticles(preValues =>
+      preValues.map(article =>
+        article.material === item.material
+          ? {
+            ...article,
+            inputQuantity: quantity,
+          }
+          : article,
+      ),
     );
   };
+
+  const renderPoItem = ({ item }) => (
+    <View key={item.poItem}
+      className="flex-row items-center border border-tb rounded-lg mt-2.5 px-3 py-2">
+      <View className="w-1/2">
+        <View className="flex-row items-center gap-x-1 mb-1">
+          <Text className="text-black text-xs xs:text-sm" numberOfLines={1}>
+            ({Number(item.poItem) / 10}) {item.material}
+          </Text>
+          {item.plant !== user.active_site && (
+            <Text
+              className="text-red-500 text-xs xs:text-sm font-medium"
+              numberOfLines={1}>
+              ({item.plant})
+            </Text>
+          )}
+        </View>
+        <Text className="w-full text-black text-xs">{item.description}</Text>
+      </View>
+      <Text
+        className="w-1/4 text-black text-xs xs:text-sm text-center"
+        numberOfLines={1}>
+        {item.quantity}
+      </Text>
+      <View className="w-1/3 mx-auto">
+        <TextInput
+          className={`w-20 h-10 text-black text-xs border ${item.selected ? 'border-gray-400'
+            : 'border-gray-200'} text-center rounded-sm px-2 focus:border-blue-500`}
+          keyboardType="phone-pad"
+          autoFocus={item.selected}
+          value={item.inputQuantity.toString() || ''}
+          onChangeText={value => handleInputChange(item, value)}
+        />
+      </View>
+    </View>
+  );
+
+  const grnItems = articles.filter(item => +item.inputQuantity > 0)
 
   let grnSummery = {};
 
@@ -234,9 +203,9 @@ const DocumentDetails = ({ navigation, route }) => {
     grnSummery = grnItems.reduce(
       (acc, curr, i) => {
         acc.totalItems = i + 1;
-        acc.totalPrice += curr.quantity * curr.unitPrice;
+        acc.totalPrice += curr.inputQuantity * curr.unitPrice;
         acc.totalVatAmount += curr.unitVat;
-        acc.totalNetAmount += curr.quantity * curr.netPrice;
+        acc.totalNetAmount += curr.inputQuantity * curr.netPrice;
         return acc;
       },
       { totalItems: 0, totalPrice: 0, totalVatAmount: 0, totalNetAmount: 0 },
@@ -267,12 +236,12 @@ const DocumentDetails = ({ navigation, route }) => {
 
   const enableGrnButton = (hasGrnItems && isValidVatAmount) || isEmptyVatAmount;
 
-  const sendToGrn = async (data) => {
+  const createGrn = async (data) => {
     try {
       setIsButtonLoading(true);
 
       const postData = {
-        poNumber: po,
+        poNumber,
         site: user.active_site,
         challans: challans.map(challan => {
           return {
@@ -297,8 +266,8 @@ const DocumentDetails = ({ navigation, route }) => {
         .then(result => {
           if (result.success) {
             setChallans([]);
-            setEnableGrnReview(false);
-            setGrnModal(false);
+            // setEnableGrnReview(false);
+            // setGrnModal(false);
             navigation.replace(screen);
           } else {
             toast(result.message);
@@ -317,13 +286,15 @@ const DocumentDetails = ({ navigation, route }) => {
     }
   };
 
+  console.log(articles);
+
   return (
     <>
       {isLoading && (
         <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-950">
           <ActivityIndicator size="large" color="#EB4B50" />
           <Text className="mt-4 text-gray-400 text-base text-center">
-            Loading {po ? 'po' : dn ? 'dn' : 'child pack'} data. Please wait......
+            Loading {poNumber ? 'po' : 'dn'} data. Please wait......
           </Text>
         </View>
       )}
@@ -361,7 +332,7 @@ const DocumentDetails = ({ navigation, route }) => {
                 />
               </View>
 
-              {po && hasGrnItems && (
+              {poNumber && hasGrnItems && (
                 <View className="button">
                   {!enableGrnReview && (
                     <Button
@@ -380,7 +351,7 @@ const DocumentDetails = ({ navigation, route }) => {
                   )}
                 </View>
               )}
-              {dn && articles.length === 0 && hasGrnItems && (
+              {/*  {dn && articles.length === 0 && hasGrnItems && (
                 <View className="button">
                   <Button
                     text={isButtonLoading ? '' : 'Review GRN'}
@@ -389,26 +360,23 @@ const DocumentDetails = ({ navigation, route }) => {
                     onPress={() => setGrnModal(true)}
                   />
                 </View>
-              )}
+              )} */}
               {/* <CameraScan /> */}
             </View>
           </View>
           {/* Challan Modal */}
-          <ChallanForm po={po} isEmptyVatAmount={isEmptyVatAmount} />
+          <ChallanForm po={poNumber} isEmptyVatAmount={isEmptyVatAmount} />
 
           {/* GRN Review Modal */}
           <GrnReview
             grnItems={grnItems}
             grnInfo={grnSummery}
             enableGrnButton={enableGrnButton}
-            documentInfo={{ po, dn }}
+            documentInfo={{ po: poNumber, dn: dnNumber }}
             totalItems={articles.length}
             minGrnVatAmount={minGrnVatAmount}
-            visibleDnGrnButton={dn && hasGrnItems && articles.length === 0}
-            sendToGrn={sendToGrn}
-          // checkGrn={checkStorageLocation}
-          // openVendorForm={setBottomModalVisible}
-          // onRefresh={onRefresh}
+            visibleDnGrnButton={dnNumber && hasGrnItems && articles.length === 0}
+            createGrn={createGrn}
           />
         </View>
       )}

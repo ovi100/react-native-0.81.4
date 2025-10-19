@@ -83,7 +83,7 @@ const Home = ({ navigation, route }) => {
     {
       name: 'Approvals',
       icon: AdHocMenuImage,
-      screen: 'ApprovalsRoot',
+      screen: 'ApprovalRoot',
       permission: 'Approvals',
       types: ['dc', 'outlet', 'darkstore'],
     },
@@ -305,7 +305,6 @@ const Home = ({ navigation, route }) => {
         </View>
       )}
       {!loading && !error && updatedUser && (
-
         <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-950">
           <FlatList
             data={filteredList}
