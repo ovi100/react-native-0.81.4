@@ -100,12 +100,10 @@ const DocumentDetails = ({ navigation, route }) => {
           const data = await fetchData(endpoint, user.token, ac.signal);
           if (ignore) return;
 
-          console.log('po details', data);
-
           setDocInfo(data);
           const items = data?.itemList ?? [];
           setTotalItems(items.length);
-          const challanList = data?.challans ?? [];
+          const challanList = data?.challans.filter(challan => challan.grnNumber == null) ?? [];
           const filteredList = items.filter(item => item.pendingGrnQuantity > 0);
           const newList = filteredList.map(item => {
             return {
@@ -146,8 +144,6 @@ const DocumentDetails = ({ navigation, route }) => {
   };
 
   const handleInputChange = (item, quantity) => {
-    console.log(+quantity, +item.pendingGrnQuantity)
-
     if (+quantity > +item.pendingGrnQuantity) {
       toast('Quantity exceed');
       return;
@@ -255,7 +251,7 @@ const DocumentDetails = ({ navigation, route }) => {
           return {
             poItem: item.poItem,
             material: item.material,
-            quantity: item.inputQuantity,
+            quantity: +item.inputQuantity,
             poQty: item.quantity,
             netPrice: item.netPrice,
             taxRate: item.taxRate,
@@ -273,6 +269,8 @@ const DocumentDetails = ({ navigation, route }) => {
         }),
       };
 
+      console.log(postData);
+
       await fetch(API_URL + 'api/po/create-po-grn', {
         method: 'POST',
         headers: {
@@ -283,6 +281,7 @@ const DocumentDetails = ({ navigation, route }) => {
       })
         .then(response => response.json())
         .then(result => {
+          console.log('create grn response', result);
           if (result.success) {
             setChallans([]);
             setEnableGrnReview(false);
@@ -414,7 +413,7 @@ const DocumentDetails = ({ navigation, route }) => {
                 GRN Number
               </Text>
               <TextInput
-                className="w-full border border-gray-100 rounded focus:border-gray-100"
+                className="w-full text-center border border-gray-100 rounded focus:border-gray-100"
                 editable={Boolean(grnResult)}
                 value={grnResult?.data?.grnNumber || ''}
               />

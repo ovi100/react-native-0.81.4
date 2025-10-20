@@ -24,9 +24,9 @@ const DocumentDetails = ({ navigation, route }) => {
   } = challanInfo;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
+  const [totalItems, setTotalItems] = useState(0);
   const [articles, setArticles] = useState([]);
   const [grnItems, setGrnItems] = useState([]);
-  // const [documentDetails, setDocumentDetails] = useState(null);
   const [pressMode, setPressMode] = useState(false);
   const DOC_TYPE = po ? "po" : dn ? "dn" : childPack ? "child" : null;
   const tableHeader = po
@@ -123,9 +123,11 @@ const DocumentDetails = ({ navigation, route }) => {
           if (ignore) return;
 
           const items = data?.itemList ?? [];
+          setTotalItems(items.length);
           const grnList = items.filter(item => item.currentReceivedQuantity > 0);
           setGrnItems(grnList);
-          const filteredList = items.filter(item => item.quantity !== item.totalReceivedQuantity);
+          const filteredList = items.filter(item => item.quantity !==
+            (item.grnQuantity + item.pendingGrnQuantity + item.currentReceivedQuantity));
           setArticles(filteredList);
         } catch (err) {
           if (!ignore && err?.name !== "AbortError") {
@@ -164,10 +166,7 @@ const DocumentDetails = ({ navigation, route }) => {
     const Wrapper = isPressMood ? TouchableOpacity : View;
 
     const getRemainingQuantity = () => {
-      const remQty = item.grnQuantity >= (item.grnQuantity + item.totalReceivedQuantity)  ?
-        item.quantity - (item.grnQuantity + item.totalReceivedQuantity) :
-        item.grnQuantity >= item.totalReceivedQuantity ? item.quantity - item.grnQuantity
-          : item.quantity - item.totalReceivedQuantity;
+      const remQty = item.quantity - (item.grnQuantity + item.pendingGrnQuantity + item.currentReceivedQuantity);
       return remQty;
     };
 
@@ -235,8 +234,8 @@ const DocumentDetails = ({ navigation, route }) => {
       (acc, curr, i) => {
         acc.totalItems = i + 1;
         acc.totalPrice += curr.quantity * curr.unitPrice;
-        acc.totalVatAmount += curr.unitVat;
-        acc.totalNetAmount += curr.quantity * curr.netPrice;
+        acc.totalVatAmount += curr.currentReceivedQuantity * curr.unitVat;
+        acc.totalNetAmount += curr.currentReceivedQuantity * curr.netPrice;
         return acc;
       },
       { totalItems: 0, totalPrice: 0, totalVatAmount: 0, totalNetAmount: 0 },
@@ -267,7 +266,7 @@ const DocumentDetails = ({ navigation, route }) => {
 
   const enableGrnButton = (hasGrnItems && isValidVatAmount) || isEmptyVatAmount;
 
-  const sendToGrn = async (data) => {
+  const sendToGrn = async () => {
     try {
       setIsButtonLoading(true);
 
@@ -402,7 +401,7 @@ const DocumentDetails = ({ navigation, route }) => {
             grnInfo={grnSummery}
             enableGrnButton={enableGrnButton}
             documentInfo={{ po, dn }}
-            totalItems={articles.length}
+            totalItems={totalItems}
             minGrnVatAmount={minGrnVatAmount}
             visibleDnGrnButton={dn && hasGrnItems && articles.length === 0}
             sendToGrn={sendToGrn}

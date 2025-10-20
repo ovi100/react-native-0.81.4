@@ -23,7 +23,7 @@ const Approvals = ({ navigation }) => {
       const fetchData = async () => {
         try {
           setIsLoading(true);
-          const response = await fetch(API_URL + 'api/po/get-pending-for-grn', {
+          const response = await fetch(API_URL + 'api/po/get-pending-for-grn/?site=' + user.active_site, {
             method: "GET",
             headers: {
               Authorization: `Bearer ${user.token}`,

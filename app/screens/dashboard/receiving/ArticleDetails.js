@@ -236,8 +236,7 @@ const ArticleDetails = ({ navigation, route }) => {
         .then(response => response.json())
         .then(result => {
           if (result.success) {
-            console.log(result)
-            navigation.push(screen);
+            navigation.replace(screen, { po, dn });
           } else {
             toast(result.message);
           }

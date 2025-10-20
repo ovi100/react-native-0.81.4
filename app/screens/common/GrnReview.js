@@ -62,16 +62,16 @@ const GrnReview = ({
         <Text
           className={`${!po ? 'w-1/3' : 'w-1/4'
             } text-sh text-[10px] xs:text-xs text-center`}>
-          {item.pendingGrnQuantity}
+          {item.inputQuantity}
         </Text>
         {po && (
           <Text className="w-1/4 text-sh text-[10px] xs:text-xs text-center">
-            {(item.netPrice * item.pendingGrnQuantity).toFixed(2)}
+            {(item.netPrice * item.inputQuantity).toFixed(2)}
           </Text>
         )}
         {po && (
           <Text className="w-1/4 text-sh text-[10px] xs:text-xs text-center">
-            {(item.unitVat * item.pendingGrnQuantity).toFixed(2)}
+            {(item.unitVat * item.inputQuantity).toFixed(2)}
           </Text>
         )}
       </View>
