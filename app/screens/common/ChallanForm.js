@@ -235,12 +235,12 @@ const ChallanForm = ({ po, isEmptyVatAmount }) => {
             </View>
             <View className="challan-image relative">
               <View className="image-upload">
-                {(image?.uri || challans[isEditingIndex]?.image) && (
+                {(image?.uri || challans[isEditingIndex]?.challanImageUrl) && (
                   <View className="image-preview relative">
                     <Image
                       className="w-full h-40 rounded"
                       source={{
-                        uri: image?.uri || challans[isEditingIndex]?.image,
+                        uri: image?.uri || challans[isEditingIndex]?.challanImageUrl,
                       }}
                     />
 

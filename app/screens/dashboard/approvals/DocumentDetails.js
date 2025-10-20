@@ -1,6 +1,6 @@
 import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import { View, Text, FlatList, ActivityIndicator, TextInput } from 'react-native';
-import { Button, FalseHeader } from '../../../../components';
+import { Button, FalseHeader, Modal } from '../../../../components';
 import { useAppContext, useBackHandler } from '../../../../hooks';
 import { FlatListStyle, serverMessage, toast } from '../../../../utils';
 import { useFocusEffect } from '@react-navigation/native';
@@ -19,11 +19,14 @@ const DocumentDetails = ({ navigation, route }) => {
     setChallans,
     setGrnModal,
     enableGrnReview,
-    // setEnableGrnReview
+    setEnableGrnReview
   } = challanInfo;
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
+  const [totalItems, setTotalItems] = useState(0);
   const [articles, setArticles] = useState([]);
+  const [docInfo, setDocInfo] = useState(null);
+  const [grnResult, setGrnResult] = useState(null);
   const DOC_TYPE = poNumber ? "po" : "dn";
   const tableHeader = poNumber
     ? ['Article Info', 'PO Qty', 'RCV Qty']
@@ -97,7 +100,11 @@ const DocumentDetails = ({ navigation, route }) => {
           const data = await fetchData(endpoint, user.token, ac.signal);
           if (ignore) return;
 
+          console.log('po details', data);
+
+          setDocInfo(data);
           const items = data?.itemList ?? [];
+          setTotalItems(items.length);
           const challanList = data?.challans ?? [];
           const filteredList = items.filter(item => item.pendingGrnQuantity > 0);
           const newList = filteredList.map(item => {
@@ -106,7 +113,7 @@ const DocumentDetails = ({ navigation, route }) => {
               inputQuantity: item.pendingGrnQuantity,
               selected: false,
             }
-          })
+          });
           setArticles(newList);
           setChallans(challanList);
         } catch (err) {
@@ -204,7 +211,7 @@ const DocumentDetails = ({ navigation, route }) => {
       (acc, curr, i) => {
         acc.totalItems = i + 1;
         acc.totalPrice += curr.inputQuantity * curr.unitPrice;
-        acc.totalVatAmount += curr.unitVat;
+        acc.totalVatAmount += curr.inputQuantity * curr.unitVat;
         acc.totalNetAmount += curr.inputQuantity * curr.netPrice;
         return acc;
       },
@@ -236,13 +243,27 @@ const DocumentDetails = ({ navigation, route }) => {
 
   const enableGrnButton = (hasGrnItems && isValidVatAmount) || isEmptyVatAmount;
 
-  const createGrn = async (data) => {
+  const createGrn = async () => {
     try {
       setIsButtonLoading(true);
 
       const postData = {
         poNumber,
+        vendor: docInfo?.vendor,
         site: user.active_site,
+        poData: grnItems.map(item => {
+          return {
+            poItem: item.poItem,
+            material: item.material,
+            quantity: item.inputQuantity,
+            poQty: item.quantity,
+            netPrice: item.netPrice,
+            taxRate: item.taxRate,
+            unit: item.unit,
+            unitIso: item.unitISO,
+            storageLocation: docInfo?.storageLocation,
+          }
+        }),
         challans: challans.map(challan => {
           return {
             ...challan,
@@ -252,9 +273,7 @@ const DocumentDetails = ({ navigation, route }) => {
         }),
       };
 
-      // console.log(postData)
-
-      await fetch(API_URL + 'api/po/create-pending-for-grn', {
+      await fetch(API_URL + 'api/po/create-po-grn', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${user.token}`,
@@ -266,9 +285,9 @@ const DocumentDetails = ({ navigation, route }) => {
         .then(result => {
           if (result.success) {
             setChallans([]);
-            // setEnableGrnReview(false);
-            // setGrnModal(false);
-            navigation.replace(screen);
+            setEnableGrnReview(false);
+            setGrnModal(false);
+            setGrnResult(result);
           } else {
             toast(result.message);
           }
@@ -285,8 +304,6 @@ const DocumentDetails = ({ navigation, route }) => {
       setIsButtonLoading(false);
     }
   };
-
-  console.log(articles);
 
   return (
     <>
@@ -373,11 +390,45 @@ const DocumentDetails = ({ navigation, route }) => {
             grnInfo={grnSummery}
             enableGrnButton={enableGrnButton}
             documentInfo={{ po: poNumber, dn: dnNumber }}
-            totalItems={articles.length}
+            totalItems={totalItems}
             minGrnVatAmount={minGrnVatAmount}
             visibleDnGrnButton={dnNumber && hasGrnItems && articles.length === 0}
-            createGrn={createGrn}
+            onPress={createGrn}
+            screen='approval'
           />
+
+          <Modal
+            isOpen={grnResult !== null}
+            header='GRN is Created successfully'
+            onPress={() => {
+              setGrnResult(null);
+              navigation.replace("Approvals");
+            }}
+          >
+            <View className="modal-content flex-col items-center justify-center mt-2">
+              <Text className="text-5xl text-green-500 p-2">
+                📜
+              </Text>
+
+              <Text className="text-base text-black font-semibold mb-2">
+                GRN Number
+              </Text>
+              <TextInput
+                className="w-full border border-gray-100 rounded focus:border-gray-100"
+                editable={Boolean(grnResult)}
+                value={grnResult?.data?.grnNumber || ''}
+              />
+              {/* <View className="buttons mx-auto mt-2">
+                <Button
+                  text="Go to receiving"
+                  size="tiny"
+                  variant="primary"
+                  edge="capsule"
+                  onPress={() => navigation.replace('Receiving', { document: poNumber })}
+                />
+              </View> */}
+            </View>
+          </Modal>
         </View>
       )}
     </>

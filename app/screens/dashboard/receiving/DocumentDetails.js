@@ -164,7 +164,7 @@ const DocumentDetails = ({ navigation, route }) => {
     const Wrapper = isPressMood ? TouchableOpacity : View;
 
     const getRemainingQuantity = () => {
-      const remQty = (item.grnQuantity + item.totalReceivedQuantity) >= item.grnQuantity ?
+      const remQty = item.grnQuantity >= (item.grnQuantity + item.totalReceivedQuantity)  ?
         item.quantity - (item.grnQuantity + item.totalReceivedQuantity) :
         item.grnQuantity >= item.totalReceivedQuantity ? item.quantity - item.grnQuantity
           : item.quantity - item.totalReceivedQuantity;

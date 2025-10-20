@@ -5,6 +5,7 @@ import { useAppContext } from '../../../../hooks';
 import { API_URL } from '../../../../app-config';
 import { useFocusEffect } from '@react-navigation/native';
 import { FalseHeader } from '../../../../components';
+import { EmptyBox } from '../../../../components/animations';
 
 const Approvals = ({ navigation }) => {
   const { authInfo } = useAppContext();
@@ -75,8 +76,6 @@ const Approvals = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  console.log(documentList);
-
   return (
     <>
       {isLoading && (
@@ -84,6 +83,14 @@ const Approvals = ({ navigation }) => {
           <ActivityIndicator size="large" color="#EB4B50" />
           <Text className="mt-4 text-gray-400 text-base text-center">
             Loading approval data. Please wait......
+          </Text>
+        </View>
+      )}
+      {!isLoading && !documentList.length && (
+        <View className="flex-1 items-center justify-center bg-white dark:bg-neutral-950">
+          <EmptyBox styles="w-32 sm:w-36 h-32 sm:h-36" />
+          <Text className="mt-4 text-gray-400 text-base sm:text-lg text-center">
+            No article is found!
           </Text>
         </View>
       )}
