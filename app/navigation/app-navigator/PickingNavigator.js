@@ -1,0 +1,89 @@
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { width } from '../../../utils';
+import { useAppContext } from '../../../hooks';
+import { ProfileMenuImage } from '../../../assets/images';
+import { Button } from '../../../components';
+import { Image } from 'react-native';
+import { HeaderBackButton } from '@react-navigation/elements';
+import Picking from '../../screens/dashboard/picking/Picking';
+import PickingDetails from '../../screens/dashboard/picking/PickingDetails';
+import PickingArticleDetails from '../../screens/dashboard/picking/PickingArticleDetails';
+
+const PickingNavigator = () => {
+  const Stack = createNativeStackNavigator();
+  const { authInfo } = useAppContext();
+  const { user } = authInfo;
+
+  const screenSettings = {
+    headerBackVisible: true,
+    headerShadowVisible: false,
+    headerTitleAlign: 'center',
+    headerTitleStyle: {
+      fontSize: width >= 360 ? 18 : 16,
+    },
+  };
+
+  const leftButton = (route, navigation) => {
+    const { screen } = route.params;
+    const style = { marginLeft: -5 }
+    // console.log('back button params', route.params);
+    return (
+      <HeaderBackButton
+        style={style}
+        onPress={() => navigation.replace(screen, route.params)} />
+    )
+  };
+
+  const rightButton = (route, navigation) => {
+    // const params = route.name == "Profile" ? {userId: user.id}: 
+    return (
+      <Button
+        type="icon"
+        icon={<Image source={ProfileMenuImage} className="w-7 h-7" />}
+        onPress={() =>
+          navigation.push('ProfileRoot', { screen: route.name, userId: user.id, data: route.params })
+        }
+      />
+    );
+  };
+
+  return (
+    <Stack.Navigator
+      name="PickingRoot"
+      screenOptions={({ route, navigation }) => {
+        // const visibleButton = route.name !== 'ProfileRoot';
+        return {
+          headerLeft: () => leftButton(route, navigation),
+          headerRight: () => rightButton(route, navigation),
+        };
+      }}
+    >
+      <Stack.Screen
+        name="Picking"
+        component={Picking}
+        options={screenSettings}
+        initialParams={{ screen: "Home" }}
+      />
+      <Stack.Screen
+        name="PickingDetails"
+        component={PickingDetails}
+        options={{
+          headerTitle: 'Picking Details',
+          ...screenSettings
+        }}
+        initialParams={{ screen: "Picking" }}
+      />
+      <Stack.Screen
+        name="PickingArticleDetails"
+        component={PickingArticleDetails}
+        options={{
+          headerTitle: 'Picking Article Details',
+          ...screenSettings
+        }}
+        initialParams={{ screen: "PickingDetails" }}
+      />
+    </Stack.Navigator>
+  );
+};
+
+export default PickingNavigator;

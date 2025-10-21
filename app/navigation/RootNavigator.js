@@ -56,6 +56,7 @@ const RootNavigator = () => {
             <Stack.Screen
               name="ChooseSite"
               component={ChooseSite}
+              // options={{ headerShown: false }}
               initialParams={{ user }}
             />
           )

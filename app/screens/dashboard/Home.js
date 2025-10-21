@@ -14,7 +14,7 @@ import { Button } from '../../../components';
 const Home = ({ navigation, route }) => {
   const { id, token } = route.params;
   const { authInfo } = useAppContext();
-  const { logout } = authInfo;
+  const { user, logout } = authInfo;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [updatedUser, setUpdatedUser] = useState(null);
@@ -52,7 +52,7 @@ const Home = ({ navigation, route }) => {
         } else {
           delete route.params.screen;
           const newUser = {
-            ...route.params,
+            ...user,
             staffId: data.staffId,
             designation: data.designation,
             roles: data.roles,
@@ -70,7 +70,7 @@ const Home = ({ navigation, route }) => {
     if (id && token) {
       fetchUser();
     }
-  }, [id, logout, route.params, token]);
+  }, [id, logout, route.params, token, user]);
 
   const menus = [
     {
@@ -118,7 +118,7 @@ const Home = ({ navigation, route }) => {
     {
       name: 'Picking',
       icon: PickingMenuImage,
-      screen: 'Picking',
+      screen: 'PickingRoot',
       permission: 'picking-access',
       types: ['dc'],
     },

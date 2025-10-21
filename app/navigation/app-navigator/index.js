@@ -4,12 +4,15 @@ import ChooseSite from '../../screens/choose-site/ChooseSite';
 import ProfileNavigator from './ProfileNavigator';
 import Home from '../../screens/dashboard/Home';
 import ReceivingNavigator from './ReceivingNavigator';
-import ApprovalNavigator from './AppovalNavigator';
+import ApprovalNavigator from './ApprovalNavigator';
+import PickingNavigator from './PickingNavigator';
+import PackingNavigator from './PackingNavigator';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
   const { authInfo } = useAppContext();
   const { user } = authInfo;
+
   const noActiveSite = Boolean(user && !user?.active_site);
 
   if (noActiveSite) {
@@ -47,6 +50,20 @@ const AppNavigator = () => {
       <Stack.Screen
         name="ProfileRoot"
         component={ProfileNavigator}
+        options={{
+          headerShown: false
+        }}
+      />
+      <Stack.Screen
+        name="PickingRoot"
+        component={PickingNavigator}
+        options={{
+          headerShown: false
+        }}
+      />
+      <Stack.Screen
+        name="PackingRoot"
+        component={PackingNavigator}
         options={{
           headerShown: false
         }}

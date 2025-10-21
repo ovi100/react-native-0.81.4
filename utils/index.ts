@@ -107,7 +107,6 @@ export const validateDate = (value: string, type: string) => {
 
 };
 
-
 export const handleDate = (value: string, type: string) => {
   value = value.replace(/\D/g, '');
 
@@ -179,4 +178,12 @@ export const formatIsoDate = (value: string) => {
     return text;
   };
   return '';
+};
+
+export const shortBinNumber = (bin: string) => {
+  if (!bin) return '';
+  const g = Number(bin.slice(bin.lastIndexOf('G') + 1, bin.indexOf('L')));
+  const l = bin.slice(bin.indexOf('L')).slice(0, 2);
+  const b = Number(bin.slice(bin.lastIndexOf('B') + 1));
+  return `G${g}-B${b}-${l}`;
 };

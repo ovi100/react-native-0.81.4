@@ -2,10 +2,9 @@ import useActivity from './useActivity';
 import useAppContext from './useAppContext';
 import useAuth from './useAuth';
 import useBackHandler from './useBackHandler';
+import useBarcodeScan from './useBarcodeScan';
 import useChallan from './useChallan';
-// import useBarcodeScan from './useBarcodeScan';
-// import useChallanInfo from './useChallanInfo';
-// import useCheckBarcode from './useCheckBarcode';
+import useCheckBarcode from './useCheckBarcode';
 // import useCreatedDocument from './useCreatedDocument';
 import useDevice from './useDevice';
 // import useDnPicking from './useDnPicking';
@@ -20,10 +19,10 @@ export {
   useActivity,
   useAppContext,
   useAuth,
-  // useBarcodeScan,
+  useBarcodeScan,
   useBackHandler,
   useChallan,
-  // useCheckBarcode,
+  useCheckBarcode,
   // useCreatedDocument,
   useDevice,
   // useDnPicking,

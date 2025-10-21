@@ -25,7 +25,7 @@ import { version } from '../../../../package.json';
 
 const Profile = ({ navigation, route }) => {
   // const { screen, data } = route.params;
-  console.log(route);
+  // console.log(route);
   const { authInfo, deviceInfo } = useAppContext();
   const { user, logout } = authInfo;
   const { theme } = deviceInfo;

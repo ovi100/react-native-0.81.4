@@ -25,7 +25,7 @@ const ChooseSite = ({ navigation, route }) => {
 
   useLayoutEffect(() => {
     let screenOptions = {};
-    if (user.sites.length > 0) {
+    if (user.sites.length > 1) {
       screenOptions = {
         headerTitle: hasActiveSite ? 'Change Site' : 'Choose Site',
         headerBackVisible: mode !== 'select',
@@ -47,7 +47,7 @@ const ChooseSite = ({ navigation, route }) => {
       screenOptions = {
         headerShown: false,
       };
-    }
+    };
 
     navigation.setOptions(screenOptions);
   }, [hasActiveSite, mode, navigation, theme, user.sites.length]);
