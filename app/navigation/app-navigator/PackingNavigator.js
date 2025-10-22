@@ -70,7 +70,7 @@ const PackingNavigator = () => {
           headerTitle: 'Packing Details',
           ...screenSettings
         }}
-        initialParams={{ screen: "Picking" }}
+        initialParams={{ screen: "Packing" }}
       />
     </Stack.Navigator>
   );

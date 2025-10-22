@@ -1,21 +1,25 @@
 import { View, Text, ActivityIndicator, FlatList, TouchableOpacity } from 'react-native'
-import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { useFocusEffect } from '@react-navigation/native'
-import { useAppContext, useBackHandler } from '../../../../hooks';
+import { useAppContext, useBackHandler, useBarcodeScan } from '../../../../hooks';
 import { API_URL } from '../../../../app-config';
 import { FlatListStyle, shortBinNumber, toast } from '../../../../utils';
 import { EmptyBox } from '../../../../components/animations';
-import { FalseHeader } from '../../../../components';
+import { FalseHeader, Input } from '../../../../components';
 import { getStorage } from '../../../../utils/storage';
+import { Search, X } from 'lucide-react-native';
 
 const PickingDetails = ({ navigation, route }) => {
-  const { screen, dn, site } = route.params;
-  const { authInfo } = useAppContext();
+  const { screen, dnNumber, site } = route.params;
+  const { authInfo, pickingInfo } = useAppContext();
   const { user } = authInfo;
+  const { filter, setFilter } = pickingInfo;
   const [isLoading, setIsLoading] = useState(false);
+  const [search, setSearch] = useState('');
   const [articles, setArticles] = useState([]);
   const [pressMode, setPressMode] = useState(false);
   const tableHeader = ['Bin', 'Article Info', 'Quantity'];
+  const { barcode, resetBarcode } = useBarcodeScan();
 
   // Custom hook to navigate screen
   useBackHandler(screen);
@@ -23,10 +27,22 @@ const PickingDetails = ({ navigation, route }) => {
   const customHeader = useMemo(() => (
     <View className="text px-1 xs:px-2">
       <Text className="text-sh text-base xs:text-lg text-center font-medium">
-        {`Picking Details\nDN ${dn}`}
+        Picking {dnNumber} Details
       </Text>
+      {filter && (
+        <TouchableOpacity
+          className="w-auto mx-auto mt-1"
+          onPress={() => setFilter('')}>
+          <View className="flex-row items-center gap-x-1 bg-slate-700 px-2 py-0.5 rounded-full ">
+            <X size={15} color="#fff" />
+            <Text className="text-xs  text-white text-center font-medium capitalize">
+              reset filter
+            </Text>
+          </View>
+        </TouchableOpacity>
+      )}
     </View>
-  ), [dn]);
+  ), [dnNumber, filter, setFilter]);
 
   useLayoutEffect(() => {
     navigation.setOptions({ headerTitle: () => customHeader });
@@ -46,7 +62,7 @@ const PickingDetails = ({ navigation, route }) => {
   const fetchPickingData = useCallback(async () => {
     try {
       setIsLoading(true);
-      await fetch(API_URL + `api/sto/picking-packing-items?documentNumber=${dn}&site=${site}&type=picking`,
+      await fetch(API_URL + `api/sto/picking-packing-items?documentNumber=${dnNumber}&site=${site}&type=picking`,
         {
           method: 'GET',
           headers: {
@@ -77,11 +93,29 @@ const PickingDetails = ({ navigation, route }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [dn, site, user.token]);
+  }, [dnNumber, site, user.token]);
 
-  useFocusEffect(useCallback(() => {
-    fetchPickingData();
-  }, [fetchPickingData]));
+  useFocusEffect(
+    useCallback(() => {
+      fetchPickingData();
+    }, [fetchPickingData])
+  );
+
+  useEffect(() => {
+    if (barcode) {
+      const matchedBinArticles = articles.filter(item => item.binCode.toLowerCase() === barcode.toLowerCase());
+      if (!matchedBinArticles.length) {
+        toast('Scan a valid bin code from the list');
+        resetBarcode();
+        return;
+      } else {
+        setFilter(shortBinNumber(barcode).toLowerCase());
+        const params = { items: matchedBinArticles, binCode: barcode, dnNumber, site, token: user.token };
+        resetBarcode();
+        navigation.replace('PickingBinDetails', params);
+      }
+    }
+  }, [articles, barcode, dnNumber, navigation, resetBarcode, setFilter, site, user.token]);
 
   const renderTableHeader = item => (
     <Text
@@ -93,7 +127,7 @@ const PickingDetails = ({ navigation, route }) => {
 
   const renderItem = ({ item, index }) => {
     const Wrapper = pressMode ? TouchableOpacity : View;
-    const params = { ...item, dn, site, token: user.token }
+    const params = { ...item, dnNumber, site, token: user.token }
     return (
       <Wrapper
         key={index}
@@ -120,6 +154,14 @@ const PickingDetails = ({ navigation, route }) => {
     );
   };
 
+  const filteredData = articles.filter((item) => {
+    const matchesSearch =
+      item.material.includes(search.toLowerCase()) ||
+      shortBinNumber(item.binCode).toLowerCase().includes(search.toLowerCase());
+    const matchesFilter = shortBinNumber(item.binCode).toLowerCase().includes(filter.toLowerCase());
+    return matchesSearch && matchesFilter;
+  });
+
   return (
     <>
       {isLoading && (
@@ -143,12 +185,22 @@ const PickingDetails = ({ navigation, route }) => {
           <View className="flex-1 h-full px-2 sm:px-4">
             <FalseHeader />
             <View className="content flex-1 justify-between pb-2">
+              {/* Search Box */}
+              <View className="search">
+                <Input
+                  icon={<Search size={24} color="#64748b" />}
+                  iconPosition="right"
+                  placeholder="Search by bin or material number"
+                  onChangeText={value => setSearch(value)}
+                  value={search}
+                />
+              </View>
               <View className={`table h-full`}>
                 <View className="table-header flex-row bg-th text-center p-2">
                   {tableHeader.map(th => renderTableHeader(th))}
                 </View>
                 <FlatList
-                  data={articles}
+                  data={filteredData}
                   renderItem={renderItem}
                   keyExtractor={(_, i) => i.toString()}
                   initialNumToRender={10}
@@ -172,4 +224,4 @@ const PickingDetails = ({ navigation, route }) => {
   )
 }
 
-export default PickingDetails
+export default PickingDetails;

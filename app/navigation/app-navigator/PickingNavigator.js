@@ -8,6 +8,7 @@ import { HeaderBackButton } from '@react-navigation/elements';
 import Picking from '../../screens/dashboard/picking/Picking';
 import PickingDetails from '../../screens/dashboard/picking/PickingDetails';
 import PickingArticleDetails from '../../screens/dashboard/picking/PickingArticleDetails';
+import PickingBinDetails from '../../screens/dashboard/picking/PickingBinDetails';
 
 const PickingNavigator = () => {
   const Stack = createNativeStackNavigator();
@@ -72,6 +73,15 @@ const PickingNavigator = () => {
           ...screenSettings
         }}
         initialParams={{ screen: "Picking" }}
+      />
+      <Stack.Screen
+        name="PickingBinDetails"
+        component={PickingBinDetails}
+        options={{
+          headerTitle: 'Picking Bin Details',
+          ...screenSettings
+        }}
+        initialParams={{ screen: "PickingDetails" }}
       />
       <Stack.Screen
         name="PickingArticleDetails"

@@ -7,7 +7,7 @@ import useChallan from './useChallan';
 import useCheckBarcode from './useCheckBarcode';
 // import useCreatedDocument from './useCreatedDocument';
 import useDevice from './useDevice';
-// import useDnPicking from './useDnPicking';
+import usePicking from './usePicking';
 import useImagePicker from './useImagePicker';
 // import useManual from './useManual';
 // import useMetaData from './useMetaData';
@@ -25,7 +25,7 @@ export {
   useCheckBarcode,
   // useCreatedDocument,
   useDevice,
-  // useDnPicking,
+  usePicking,
   useImagePicker,
   // useManual,
   // useMetaData,

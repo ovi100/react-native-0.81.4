@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { useAuth, useChallan, useDevice } from '../hooks';
+import { useAuth, useChallan, useDevice, usePicking } from '../hooks';
 
 export const AppContext = createContext({});
 
@@ -9,16 +9,14 @@ const AppProvider = ({ children }) => {
   // const createdInfo = useCreatedDocument();
   const deviceInfo = useDevice();
   // const manualInfo = useManual();
-  // const metadataInfo = useMetaData();
-  // const pickingInfo = useDnPicking();
+  const pickingInfo = usePicking();
   const contextValues = {
     authInfo,
     challanInfo,
     // createdInfo,
     deviceInfo,
     // manualInfo,
-    // metadataInfo,
-    // pickingInfo,
+    pickingInfo,
   };
   return (
     <AppContext.Provider value={contextValues}>{children}</AppContext.Provider>

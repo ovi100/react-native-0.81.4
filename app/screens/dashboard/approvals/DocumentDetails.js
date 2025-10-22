@@ -184,10 +184,10 @@ const DocumentDetails = ({ navigation, route }) => {
         numberOfLines={1}>
         {item.quantity}
       </Text>
-      <View className="w-1/3 mx-auto">
+      <View className="w-1/3">
         <TextInput
           className={`w-20 h-10 text-black text-xs border ${item.selected ? 'border-gray-400'
-            : 'border-gray-200'} text-center rounded-sm px-2 focus:border-blue-500`}
+            : 'border-gray-200'} text-center rounded-sm px-2 focus:border-blue-500 mx-auto`}
           keyboardType="phone-pad"
           autoFocus={item.selected}
           value={item.inputQuantity.toString() || ''}

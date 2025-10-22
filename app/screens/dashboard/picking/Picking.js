@@ -6,18 +6,26 @@ import { Search } from 'lucide-react-native';
 import { Scan } from '../../../../components/animations';
 import { toast } from '../../../../utils';
 import { API_URL } from '../../../../app-config';
+import { useFocusEffect } from '@react-navigation/native';
 
 const Picking = ({ navigation, route }) => {
-  const { authInfo } = useAppContext();
+  const { authInfo, pickingInfo } = useAppContext();
   const { user } = authInfo;
+  const { setFilter } = pickingInfo;
   const [search, setSearch] = useState('');
   const [isChecking, setIsChecking] = useState(false);
-  const { barcode } = useBarcodeScan();
+  const { barcode, resetBarcode } = useBarcodeScan();
 
   // const dnRegex = /^12[0-9]{7}$/;
 
   // Custom hook to navigate screen
   useBackHandler('Home');
+
+  useFocusEffect(
+    useCallback(() => {
+      setFilter('');
+    }, [setFilter])
+  );
 
   const checkDocument = useCallback(async (document, type) => {
 
@@ -37,9 +45,9 @@ const Picking = ({ navigation, route }) => {
         })
         .then(response => response.json())
         .then(result => {
-          console.log(result)
           if (result.success) {
-            navigation.replace('PickingDetails', { dn: result.data.dnNumber, site: result.data.site });
+            const params = { dnNumber: result.data.dnNumber, site: result.data.site };
+            navigation.replace('PickingDetails', params);
           } else {
             let message = result.message.trim();
             message = message.includes('Could not open connection')
@@ -65,18 +73,21 @@ const Picking = ({ navigation, route }) => {
     if (barcode) {
       if (isNaN(barcode)) {
         toast('Scan a valid DN or short number');
+        resetBarcode();
         return;
       }
       if (barcode.length < 9 || barcode.length < 3) {
         toast('Scan a valid DN or short number');
+        resetBarcode();
         return;
       }
       if (user) {
         checkDocument(barcode, 'picking');
+        resetBarcode();
         setSearch('');
       }
     }
-  }, [barcode, checkDocument, user]);
+  }, [barcode, checkDocument, resetBarcode, user]);
 
   const searchDocument = async () => {
     if (!search) {
@@ -97,7 +108,7 @@ const Picking = ({ navigation, route }) => {
 
   return (
     <KeyboardAvoidingView
-      className="bg-white flex-1 px-4"
+      className="bg-white dark:bg-neutral-950 flex-1 px-4"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <FalseHeader />
       <View className="flex-1">
@@ -112,15 +123,15 @@ const Picking = ({ navigation, route }) => {
             value={search}
           />
         </View>
-        <View className="content h-3/5 justify-center">
-          {isChecking ? (
-            <View className="bg-white">
-              <ActivityIndicator size="large" color="#EB4B50" />
-              <Text className="mt-4 text-gray-400 text-sm xs:text-base text-center">
-                Checking PO number......
-              </Text>
-            </View>
-          ) : (
+        {isChecking ? (
+          <View className="bg-white dark:bg-neutral-950 flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color="#EB4B50" />
+            <Text className="mt-4 text-gray-400 text-sm xs:text-base text-center">
+              Checking PO number......
+            </Text>
+          </View>
+        ) : (
+          <View className="content h-3/5 justify-center">
             <View className="relative">
               <Scan styles="w-52 xs:w-54 h-52 xs:h-54" />
               <Text className="text-base xs:text-lg text-gray-400 text-center font-bold uppercase">
@@ -130,12 +141,10 @@ const Picking = ({ navigation, route }) => {
                 DN or Short Number
               </Text>
             </View>
-          )}
-
-        </View>
+          </View>
+        )}
         {/* <CameraScan /> */}
       </View>
-      {/* <CustomToast /> */}
     </KeyboardAvoidingView>
   )
 }

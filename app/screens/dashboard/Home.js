@@ -125,7 +125,7 @@ const Home = ({ navigation, route }) => {
     {
       name: 'Packing',
       icon: PackingMenuImage,
-      screen: 'Packing',
+      screen: 'PackingRoot',
       permission: 'packing-access',
       types: ['dc'],
     },

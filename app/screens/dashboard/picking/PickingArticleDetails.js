@@ -6,7 +6,7 @@ import { API_URL } from '../../../../app-config';
 import { toast } from '../../../../utils';
 
 const PickingArticleDetails = ({ navigation, route }) => {
-  const { screen, dn, site, token, binCode, material, quantity } = route.params;
+  const { screen, dnNumber, site, token, binCode, material, quantity } = route.params;
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [pickedQuantity, setPickedQuantity] = useState(0);
 
@@ -32,19 +32,26 @@ const PickingArticleDetails = ({ navigation, route }) => {
   const pickItem = async () => {
     try {
       setIsButtonLoading(true);
-      // console.log(dn, pickedQuantity, material, binCode);
 
-      await fetch(API_URL + `api/sto/pick-items?dnNumber=${dn}&quantity=${pickedQuantity}&material=${material}&binCode=${binCode}`, {
+      const postData = {
+        dnNumber,
+        quantity: pickedQuantity,
+        material,
+        binCode
+      };
+
+      await fetch(API_URL + 'api/sto/pick-items', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify(postData)
       })
         .then(response => response.json())
         .then(result => {
           if (result.success) {
-            navigation.replace(screen, { dn, site });
+            navigation.replace(screen, { dnNumber, site });
           } else {
             toast(result.message);
           }

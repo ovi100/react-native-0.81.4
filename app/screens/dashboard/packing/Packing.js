@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, KeyboardAvoidingView, Platform, ActivityIndicator, Keyboard } from 'react-native';
 import { FalseHeader, Input } from '../../../../components';
-import { useAppContext, useBackHandler } from '../../../../hooks';
+import { useAppContext, useBackHandler, useBarcodeScan } from '../../../../hooks';
 import { Search } from 'lucide-react-native';
 import { Scan } from '../../../../components/animations';
 import { toast } from '../../../../utils';
@@ -12,13 +12,14 @@ const Packing = ({ navigation, route }) => {
   const { user } = authInfo;
   const [search, setSearch] = useState('');
   const [isChecking, setIsChecking] = useState(false);
+  const { barcode, resetBarcode } = useBarcodeScan();
 
   // const dnRegex = /^12[0-9]{7}$/;
 
   // Custom hook to navigate screen
   useBackHandler('Home');
 
-  const checkDocument = async (document, type) => {
+  const checkDocument = useCallback(async (document, type) => {
 
     if (document.length === 9) {
       document = '0' + document;
@@ -26,7 +27,7 @@ const Packing = ({ navigation, route }) => {
 
     try {
       setIsChecking(true);
-      await fetch(API_URL + `api/service/check-document/?documentNumber=${document}&documentType=${type}&site=${user.active_site}`,
+      await fetch(API_URL + `api/sto/picking-packing-items?documentNumber=${document}&site=${user.active_site}&type=${type}`,
         {
           method: 'GET',
           headers: {
@@ -35,9 +36,10 @@ const Packing = ({ navigation, route }) => {
           }
         })
         .then(response => response.json())
-        .then(async result => {
+        .then(result => {
           if (result.success) {
-            navigation.replace('PickingDetails');
+            const params = { dnNumber: result.data.dnNumber, site: result.data.site, token: user.token };
+            navigation.replace('PackingDetails', params);
           } else {
             let message = result.message.trim();
             message = message.includes('Could not open connection')
@@ -50,34 +52,55 @@ const Packing = ({ navigation, route }) => {
           const message = error.message.includes('JSON Parse error')
             ? 'Server is down'
             : error.message;
-          toast('customError', message);
+          toast(message);
         });
     } catch (error) {
       toast(error.message);
     } finally {
       setIsChecking(false);
     }
-  };
+  }, [navigation, user.active_site, user.token]);
+
+  useEffect(() => {
+    if (barcode) {
+      if (isNaN(barcode)) {
+        toast('Scan a valid DN or short number');
+        resetBarcode();
+        return;
+      }
+      if (barcode.length < 9 || barcode.length < 3) {
+        toast('Scan a valid DN or short number');
+        resetBarcode();
+        return;
+      }
+      if (user) {
+        checkDocument(barcode, 'packing');
+        resetBarcode();
+        setSearch('');
+      }
+    }
+  }, [barcode, checkDocument, resetBarcode, user]);
 
   const searchDocument = async () => {
-
     if (!search) {
       toast('Please enter a DN or short number');
       setSearch('');
       return;
-    } else if (search && isNaN(search)) {
+    } else if (isNaN(search)) {
+      toast('Enter a valid DN or short number');
+      return;
+    } else if (search.length < 9 || search.length < 3) {
       toast('Enter a valid DN or short number');
       return;
     } else {
-      const type = 'picking'
       Keyboard.dismiss();
-      await checkDocument(search, type);
+      await checkDocument(search, 'packing');
     }
   };
 
   return (
     <KeyboardAvoidingView
-      className="bg-white flex-1 px-4"
+      className="bg-white dark:bg-neutral-950 flex-1 px-4"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <FalseHeader />
       <View className="flex-1">
@@ -92,15 +115,15 @@ const Packing = ({ navigation, route }) => {
             value={search}
           />
         </View>
-        <View className="content h-3/5 justify-center">
-          {isChecking ? (
-            <View className="bg-white">
-              <ActivityIndicator size="large" color="#EB4B50" />
-              <Text className="mt-4 text-gray-400 text-sm xs:text-base text-center">
-                Checking PO number......
-              </Text>
-            </View>
-          ) : (
+        {isChecking ? (
+          <View className="bg-white dark:bg-neutral-950 flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color="#EB4B50" />
+            <Text className="mt-4 text-gray-400 text-sm xs:text-base text-center">
+              Checking PO number......
+            </Text>
+          </View>
+        ) : (
+          <View className="content h-3/5 justify-center">
             <View className="relative">
               <Scan styles="w-52 xs:w-54 h-52 xs:h-54" />
               <Text className="text-base xs:text-lg text-gray-400 text-center font-bold uppercase">
@@ -110,12 +133,10 @@ const Packing = ({ navigation, route }) => {
                 DN or Short Number
               </Text>
             </View>
-          )}
-
-        </View>
+          </View>
+        )}
         {/* <CameraScan /> */}
       </View>
-      {/* <CustomToast /> */}
     </KeyboardAvoidingView>
   )
 }

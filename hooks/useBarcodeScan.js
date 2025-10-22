@@ -67,12 +67,15 @@ const useBarcodeScan = () => {
     return () => {
       stopScan();
       stopCameraScan();
-      setBarcode('');
       listener?.remove();
     };
   }, [brand, sunmiScanner, cameraScanner, stopScan, stopCameraScan]);
 
-  return { barcode };
+  const resetBarcode = () => {
+    setBarcode('');
+  };
+
+  return { barcode, resetBarcode };
 };
 
 export default useBarcodeScan;
